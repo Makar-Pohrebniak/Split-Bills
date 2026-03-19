@@ -59,7 +59,7 @@ Code quality is enforced through a rigorous unit testing suite:
 
 ## P.S from author
 1. This is my pet project, here I want to show you how I can code because I want to be master of coding one day :)
-2. I use AI like an assistant, like Tony Start uses Jarvis, but I'm not a millionaire yet :)
+2. I use AI like an assistant, like Tony Stark used Jarvis, but I'm not a millionaire yet :)
 3. I believe that AI is our future, but to uncover full potential of AI is in the hands of smart and lazy developers.
 3. I don't know if I will be able to finish this project, but I'll do my best.
 4. So enjoy and don't let people use you :) (for free)
