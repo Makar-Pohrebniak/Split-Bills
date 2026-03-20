@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -21,9 +23,10 @@ public class JwtUtils {
     @Value("${jwt.expirationMs}")
     private Long jwtExpirationMs;
 
-    public String generateToken(UUID subId) {
+    public String generateToken(UUID subId, List<String> roles) {
         return Jwts.builder()
                 .subject(subId.toString())
+                .claims(Map.of("roles", roles))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSigningKey())
@@ -51,6 +54,11 @@ public class JwtUtils {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("roles", List.class);
     }
 
     private boolean isTokenExpired(String token) {
