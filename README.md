@@ -20,6 +20,7 @@ The core security foundation has been successfully implemented, covering:
 * **US-1: User Registration**: Secure account creation with data validation and password hashing (BCrypt).
 * **US-2: User Login**: Secure user authentication and credential verification.
 * **US-3: JWT Issuance**: Generation of secure, signed tokens for stateless request authorization.
+* **US-4: Secure endpoints**: Add authorization with Bearer token to all endpoints except for authentication layer.
 
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
@@ -30,6 +31,8 @@ The core security foundation has been successfully implemented, covering:
     - **Impact:** Ensures consistent and automated ID creation during the persistence layer, simplifying the entity lifecycle management.
 3. **Stateless Architecture**:
     - By utilizing JWTs, the service remains entirely stateless, making it ready for horizontal scaling in a `microservices` environment.
+4. **Authorization on all layers except for auth layer**:
+    - Auth layer: login, register have to be available and other layers only with proper authorization.
 
 ---
 
@@ -37,6 +40,9 @@ The core security foundation has been successfully implemented, covering:
 Code quality is enforced through a rigorous unit testing suite:
 * **`AuthServiceTest`**: Full coverage of registration and login business logic using **Mockito**.
 * **`JwtUtilsTest`**: Verification of the token lifecycle (generation/validation) using **`ReflectionTestUtils`** to simulate the Spring environment without the overhead of a full application context.
+* **`AuthControllerTest`**: Full coverage of registration and login endpoints using **WebMvcTest**.
+* **`UserControllerTest`**: Full coverage of get user endpoints using **WebMvcTest**.
+* **`UserServiceTest`**: Full coverage of getting user with different ways business logic using **Mockito**.
 
 ---
 
@@ -52,7 +58,7 @@ Code quality is enforced through a rigorous unit testing suite:
 
 ## 🚀 Getting Started
 1. Clone the repository.
-2. Configure your MySQL credentials in `src/main/resources/application.properties`.
+2. Configure your MySQL credentials in `src/main/resources/application.yml`.
 3. Run the application: `./mvnw spring-boot:run`.
 
 ---
