@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -32,4 +33,12 @@ public class UserEntity {
     @Column(name = "sub_id", unique = true, nullable = false, updatable = false)
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     private UUID subId = UUID.randomUUID();
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<RoleEntity> roles;
 }
