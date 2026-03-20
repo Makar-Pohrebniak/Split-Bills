@@ -4,7 +4,7 @@ import com.example.SplitBills.enums.ErrorType;
 import com.example.SplitBills.exception.IncorrectPasswordException;
 import com.example.SplitBills.exception.UserAlreadyExistsException;
 import com.example.SplitBills.exception.UserNotFoundException;
-import com.example.SplitBills.model.dto.ApiError;
+import com.example.SplitBills.exception.ApiError;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

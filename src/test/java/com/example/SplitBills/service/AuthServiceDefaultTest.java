@@ -1,12 +1,15 @@
 package com.example.SplitBills.service;
 
 import com.example.SplitBills.enums.ErrorType;
+import com.example.SplitBills.enums.Role;
 import com.example.SplitBills.exception.IncorrectPasswordException;
 import com.example.SplitBills.exception.UserAlreadyExistsException;
 import com.example.SplitBills.exception.UserNotFoundException;
 import com.example.SplitBills.model.dto.request.RegisterRequest;
 import com.example.SplitBills.model.dto.response.LoginResponse;
+import com.example.SplitBills.model.entity.RoleEntity;
 import com.example.SplitBills.model.entity.UserEntity;
+import com.example.SplitBills.repository.RoleRepository;
 import com.example.SplitBills.repository.UserRepository;
 import com.example.SplitBills.security.JwtUtils;
 import com.example.SplitBills.service.impl.AuthServiceDefault;
@@ -18,7 +21,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -36,18 +42,28 @@ class AuthServiceDefaultTest {
     @Mock
     private JwtUtils jwtUtils;
 
+    @Mock
+    private RoleRepository roleRepository;
+
     @InjectMocks
     private AuthServiceDefault authService;
 
     private UserEntity testUser;
+    private RoleEntity userRole;
 
     @BeforeEach
     void setUp() {
-        testUser = new UserEntity();
-        testUser.setId(1L);
-        testUser.setUsername("Ihor");
-        testUser.setEmail("test@gmail.com");
-        testUser.setPassword("encoded_password");
+        userRole = new RoleEntity();
+        userRole.setRole(Role.USER);
+
+        testUser = UserEntity.builder()
+                .id(1L)
+                .subId(UUID.randomUUID())
+                .username("Ihor")
+                .email("test@gmail.com")
+                .password("encoded_password")
+                .roles(Set.of(userRole))
+                .build();
     }
 
     @Test
@@ -59,6 +75,7 @@ class AuthServiceDefaultTest {
 
         when(userRepository.existsByUsername("John")).thenReturn(false);
         when(userRepository.existsByEmail("john@gmail.com")).thenReturn(false);
+        when(roleRepository.findByRole(Role.USER)).thenReturn(Optional.of(userRole));
         when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
 
         String result = authService.register(request);
@@ -67,7 +84,8 @@ class AuthServiceDefaultTest {
         verify(userRepository).save(argThat(user ->
                 user.getUsername().equals("John") &&
                         user.getEmail().equals("john@gmail.com") &&
-                        user.getPassword().equals("encoded_password")
+                        user.getPassword().equals("encoded_password") &&
+                        user.getRoles().contains(userRole)
         ));
     }
 
@@ -92,10 +110,11 @@ class AuthServiceDefaultTest {
     void login_Success_ShouldReturnLoginResponse() {
         String rawPassword = "password123";
         String email = "test@gmail.com";
+        List<String> expectedRoles = List.of("USER");
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches(rawPassword, testUser.getPassword())).thenReturn(true);
-        when(jwtUtils.generateToken(testUser.getSubId())).thenReturn("valid.jwt.token");
+        when(jwtUtils.generateToken(testUser.getSubId(), expectedRoles)).thenReturn("valid.jwt.token");
         when(jwtUtils.getExpirationMs()).thenReturn(3600000L);
 
         LoginResponse response = authService.login(email, rawPassword);
@@ -105,12 +124,13 @@ class AuthServiceDefaultTest {
                 () -> assertEquals("valid.jwt.token", response.getToken()),
                 () -> assertEquals("Ihor", response.getUsername()),
                 () -> assertEquals(1L, response.getUserId()),
-                () -> assertEquals(email, response.getEmail())
+                () -> assertEquals(email, response.getEmail()),
+                () -> assertEquals(3600000L, response.getExpirationTime())
         );
 
         verify(userRepository).findByEmail(email);
         verify(passwordEncoder).matches(rawPassword, "encoded_password");
-        verify(jwtUtils).generateToken(testUser.getSubId());
+        verify(jwtUtils).generateToken(testUser.getSubId(), expectedRoles);
     }
 
     @Test
@@ -134,5 +154,7 @@ class AuthServiceDefaultTest {
         assertThrows(IncorrectPasswordException.class, () ->
                 authService.login(email, "wrong_pass")
         );
+
+        verify(jwtUtils, never()).generateToken(any(), any());
     }
 }
