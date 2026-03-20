@@ -1,6 +1,6 @@
 package com.example.SplitBills.swagger;
 
-import com.example.SplitBills.model.dto.ApiError;
+import com.example.SplitBills.exception.ApiError;
 import com.example.SplitBills.model.dto.request.LoginRequest;
 import com.example.SplitBills.model.dto.request.RegisterRequest;
 import com.example.SplitBills.model.dto.response.LoginResponse;

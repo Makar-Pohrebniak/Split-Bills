@@ -5,6 +5,7 @@ import com.example.SplitBills.exception.UserAlreadyExistsException;
 import com.example.SplitBills.model.dto.request.LoginRequest;
 import com.example.SplitBills.model.dto.request.RegisterRequest;
 import com.example.SplitBills.model.dto.response.LoginResponse;
+import com.example.SplitBills.security.JwtUtils;
 import com.example.SplitBills.service.api.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -12,12 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import org.springframework.http.MediaType;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,6 +32,9 @@ public class AuthControllerTest {
 
     @MockitoBean
     private AuthService authService;
+
+    @MockitoBean
+    private JwtUtils jwtUtils;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -47,9 +51,10 @@ public class AuthControllerTest {
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
-                        .andExpect(status().isCreated())
-                        .andExpect(content().string("User registered successfully"));
+                .andExpect(status().isCreated())
+                .andExpect(content().string("User registered successfully"));
     }
+
     @Test
     void secondAttemptOfUserRegistration_returns409() throws Exception {
         RegisterRequest registerRequest = new RegisterRequest();
@@ -65,6 +70,7 @@ public class AuthControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.errorMessage").value("The user already exists with john@gmail.com"));
     }
+
     @Test
     void login_returns200() throws Exception {
         LoginRequest loginRequest = new LoginRequest();

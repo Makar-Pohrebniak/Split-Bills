@@ -1,4 +1,4 @@
-package com.example.SplitBills.model.dto;
+package com.example.SplitBills.exception;
 
 import com.example.SplitBills.enums.ErrorType;
 import com.fasterxml.jackson.annotation.JsonInclude;
