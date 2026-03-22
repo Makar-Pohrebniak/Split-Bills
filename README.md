@@ -11,8 +11,8 @@
 * **Persistence:** Spring Data JPA (Hibernate 6)
 * **Database:** MySQL 8.x (Optimized for UUID storage)
 * **Testing:** JUnit 5, Mockito, AssertJ
-* **Migrations:** Liquibase
-* **Containerization** Docker
+* **DB versioning:** Liquibase
+* **Containerization:** Docker
 
 ---
 
