@@ -11,6 +11,8 @@
 * **Persistence:** Spring Data JPA (Hibernate 6)
 * **Database:** MySQL 8.x (Optimized for UUID storage)
 * **Testing:** JUnit 5, Mockito, AssertJ
+* **Migrations:** Liquibase
+* **Containerization** Docker
 
 ---
 
@@ -21,6 +23,7 @@ The core security foundation has been successfully implemented, covering:
 * **US-2: User Login**: Secure user authentication and credential verification.
 * **US-3: JWT Issuance**: Generation of secure, signed tokens for stateless request authorization.
 * **US-4: Secure endpoints**: Add authorization with Bearer token to all endpoints except for authentication layer.
+* **US-0: Infrastructure and Database Versioning**: Containerization of the application and database using Docker Compose; automated schema management and migrations via Liquibase.
 
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
@@ -33,6 +36,8 @@ The core security foundation has been successfully implemented, covering:
     - By utilizing JWTs, the service remains entirely stateless, making it ready for horizontal scaling in a `microservices` environment.
 4. **Authorization on all layers except for auth layer**:
     - Auth layer: login, register have to be available and other layers only with proper authorization.
+5. **Infrastructure & Migrations (Docker & Liquibase)**:
+   - The application is fully containerized with **Docker Compose**, and the database schema is managed via **Liquibase** migrations.
 
 ---
 
@@ -48,6 +53,7 @@ Code quality is enforced through a rigorous unit testing suite:
 
 ## 🗺 Roadmap
 - [x] **Phase 1: Foundation** (Auth, JWT, Security Config)
+- [x] **Phase 0: Containerization** (Liquibase, Docker compose)
 - [ ] **Phase 2: Social** (User Profiles, Search, Friend System)
 - [ ] **Phase 3: Core Logic** (Groups Management, Participant Roles)
 - [ ] **Phase 4: Finance** (Expense Tracking, Equal/Unequal Split Algorithms)
@@ -59,7 +65,7 @@ Code quality is enforced through a rigorous unit testing suite:
 ## 🚀 Getting Started
 1. Clone the repository.
 2. Configure your MySQL credentials in `src/main/resources/application.yml`.
-3. Run the application: `./mvnw spring-boot:run`.
+3. Run the application: `./mvnw spring-boot:run` and `docker-compose up -d`.
 
 ---
 

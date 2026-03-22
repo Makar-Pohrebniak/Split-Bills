@@ -9,15 +9,13 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  liquibase:
+    change-log: classpath:db/db.changelog-master.yaml
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
 
 springdoc:
   api-docs:
@@ -28,3 +26,7 @@ springdoc:
 jwt:
   secret: ${JWT_SECRET}
   expirationMs: ${JWT_EXPIRATION}
+
+logging:
+  level:
+    liquibase: DEBUG

@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01-init-db-tables
+      author: Makar
+      changes:
+        - sqlFile:
+            path: changes/db.changeset-1-initial.sql
+            relativeToChangelogFile: true
+            endDelimiter: ";"
+            splitStatements: true
+            stripComments: true

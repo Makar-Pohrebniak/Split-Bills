@@ -1,0 +1,14 @@
+services:
+  splitbills-db:
+    image: mysql:8.0
+    container_name: splitbills-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: split_bills_db
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
