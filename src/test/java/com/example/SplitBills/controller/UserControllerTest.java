@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.when;
@@ -65,12 +66,13 @@ class UserControllerTest {
 
     @Test
     void getUserByUsername_returns200() throws Exception {
-        when(userService.getUserByUsername("Ihor")).thenReturn(Optional.of(userResponse));
+        when(userService.getUserByUsername("Ihor")).thenReturn(List.of(userResponse));
 
         mockMvc.perform(get("/api/v1/users/username/Ihor")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("Ihor"));
+                .andExpect(jsonPath("$[0].username").value("Ihor"))
+                .andExpect(jsonPath("$[0].email").value(userResponse.getEmail()));
     }
 
     @Test

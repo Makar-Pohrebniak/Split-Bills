@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,21 +60,24 @@ class UserServiceDefaultTest {
     }
 
     @Test
-    void getUserByUsername_Exists_ShouldReturnUserResponse() {
-        when(userRepository.findByUsername("Ihor")).thenReturn(Optional.of(testUser));
+    void getUserByUsername_Exists_ShouldReturnListWithUser() {
+        when(userRepository.findByUsername("Ihor")).thenReturn(List.of(testUser));
 
-        Optional<UserResponse> result = userService.getUserByUsername("Ihor");
+        List<UserResponse> result = userService.getUserByUsername("Ihor");
 
-        assertTrue(result.isPresent());
-        assertEquals("Ihor", result.get().getUsername());
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals("Ihor", result.get(0).getUsername());
         verify(userRepository).findByUsername("Ihor");
     }
 
     @Test
-    void getUserByUsername_DoesNotExist_ShouldThrowUserNotFoundException() {
-        when(userRepository.findByUsername("Unknown")).thenReturn(Optional.empty());
+    void getUserByUsername_DoesNotExist_ShouldReturnEmptyList() {
+        when(userRepository.findByUsername("Unknown")).thenReturn(List.of());
 
-        assertThrows(UserNotFoundException.class, () -> userService.getUserByUsername("Unknown"));
+        List<UserResponse> result = userService.getUserByUsername("Unknown");
+
+        assertTrue(result.isEmpty());
     }
 
     @Test

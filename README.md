@@ -25,6 +25,10 @@ The core security foundation has been successfully implemented, covering:
 * **US-4: Secure endpoints**: Add authorization with Bearer token to all endpoints except for authentication layer.
 * **US-0: Infrastructure and Database Versioning**: Containerization of the application and database using Docker Compose; automated schema management and migrations via Liquibase.
 
+## 🏗 Phase 2: Searching for users and friends
+Searching for users and friends in different ways:
+* **US-5 & US-6 Searching for users**: Searching for people with username or email.
+
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
     - Instead of standard auto-incremented `Long` IDs, I use **UUIDs** for user identification within JWTs and the system core.

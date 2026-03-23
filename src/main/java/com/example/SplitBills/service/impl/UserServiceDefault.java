@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,14 +31,15 @@ public class UserServiceDefault implements UserService {
     }
 
     @Override
-    public Optional<UserResponse> getUserByUsername(String username) {
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
+    public List<UserResponse> getUserByUsername(String username) {
+        List<UserEntity> users = userRepository.findByUsername(username);
 
-        return Optional.of(UserResponse.builder()
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .build());
+        return users.stream()
+                .map(user -> UserResponse.builder()
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .build())
+                .toList();
     }
 
     @Override
