@@ -108,7 +108,7 @@ class AuthServiceDefaultTest {
 
     @Test
     void login_Success_ShouldReturnLoginResponse() {
-        String rawPassword = "password123";
+        String rawPassword = "Password_pass1!";
         String email = "test@gmail.com";
         List<String> expectedRoles = List.of("USER");
 

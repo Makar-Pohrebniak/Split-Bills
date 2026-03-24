@@ -35,7 +35,7 @@ class UserServiceDefaultTest {
                 .id(1L)
                 .username("Ihor")
                 .email("test@gmail.com")
-                .password("encoded_password")
+                .password("Password_pass1!")
                 .build();
     }
 

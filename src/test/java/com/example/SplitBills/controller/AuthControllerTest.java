@@ -43,7 +43,7 @@ public class AuthControllerTest {
     void userRegistration_returns201() throws Exception {
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername("John");
-        registerRequest.setPassword("password");
+        registerRequest.setPassword("Password_pass1!");
         registerRequest.setEmail("john@gmail.com");
 
         when(authService.register(any(RegisterRequest.class))).thenReturn("User registered successfully");
@@ -59,7 +59,7 @@ public class AuthControllerTest {
     void secondAttemptOfUserRegistration_returns409() throws Exception {
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername("John");
-        registerRequest.setPassword("password");
+        registerRequest.setPassword("Password_pass1!");
         registerRequest.setEmail("john@gmail.com");
 
         when(authService.register(any(RegisterRequest.class))).thenThrow(new UserAlreadyExistsException(registerRequest.getEmail()));
@@ -75,7 +75,7 @@ public class AuthControllerTest {
     void login_returns200() throws Exception {
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail("test@gmail.com");
-        loginRequest.setPassword("password");
+        loginRequest.setPassword("Password_pass1!");
 
         LoginResponse loginResponse = LoginResponse.builder()
                 .token("test-jwt-token")

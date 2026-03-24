@@ -1,4 +1,4 @@
-package com.example.SplitBills.service.security;
+package com.example.SplitBills.security;
 
 import com.example.SplitBills.security.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
