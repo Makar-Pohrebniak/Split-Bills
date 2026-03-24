@@ -56,8 +56,8 @@ Code quality is enforced through a rigorous unit testing suite:
 ---
 
 ## 🗺 Roadmap
-- [x] **Phase 1: Foundation** (Auth, JWT, Security Config)
 - [x] **Phase 0: Containerization** (Liquibase, Docker compose)
+- [x] **Phase 1: Foundation** (Auth, JWT, Security Config)
 - [ ] **Phase 2: Social** (User Profiles, Search, Friend System)
 - [ ] **Phase 3: Core Logic** (Groups Management, Participant Roles)
 - [ ] **Phase 4: Finance** (Expense Tracking, Equal/Unequal Split Algorithms)

@@ -9,10 +9,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
@@ -35,6 +37,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleIncorrectPasswordException(IncorrectPasswordException ex) {
         log.info(ex.getMessage());
         return buildResponse(HttpStatus.UNAUTHORIZED, ex.getErrorType(), ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+
+        log.info("Validation error: {}", errorMessage);
+
+        return buildResponse(HttpStatus.BAD_REQUEST, ErrorType.VALIDATION_ERROR, errorMessage);
     }
 
     private ResponseEntity<ApiError> buildResponse(HttpStatus status, ErrorType type, String message) {
