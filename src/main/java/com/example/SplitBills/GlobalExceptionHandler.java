@@ -1,10 +1,7 @@
 package com.example.SplitBills;
 
 import com.example.SplitBills.enums.ErrorType;
-import com.example.SplitBills.exception.IncorrectPasswordException;
-import com.example.SplitBills.exception.UserAlreadyExistsException;
-import com.example.SplitBills.exception.UserNotFoundException;
-import com.example.SplitBills.exception.ApiError;
+import com.example.SplitBills.exception.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -37,6 +34,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleIncorrectPasswordException(IncorrectPasswordException ex) {
         log.info(ex.getMessage());
         return buildResponse(HttpStatus.UNAUTHORIZED, ex.getErrorType(), ex.getMessage());
+    }
+
+    @ExceptionHandler(YouAreNotYourFriendException.class)
+    public ResponseEntity<ApiError> handleYouAreNotYourFriendException(YouAreNotYourFriendException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getErrorType(), ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

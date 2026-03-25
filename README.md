@@ -28,6 +28,11 @@ The core security foundation has been successfully implemented, covering:
 ## 🏗 Phase 2: Searching for users and friends
 Searching for users and friends in different ways:
 * **US-5 & US-6 Searching for users**: Searching for people with username or email.
+* **US-7 Friends list**: Adding, deleting and getting list of friends.
+
+## 🏗 Phase 3: Groups & participants
+Managing groups:
+* **US-8 Create a group** IN PROGRESS
 
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
