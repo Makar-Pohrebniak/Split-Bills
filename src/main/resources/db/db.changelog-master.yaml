@@ -9,3 +9,14 @@ databaseChangeLog:
             endDelimiter: ";"
             splitStatements: true
             stripComments: true
+
+  - changeSet:
+      id: 02-friends-set
+      author: Makar
+      changes:
+        - sqlFile:
+            path: changes/db.changeset-2-friends-set.sql
+            relativeToChangelogFile: true
+            endDelimiter: ";"
+            splitStatements: true
+            stripComments: true
