@@ -20,3 +20,14 @@ databaseChangeLog:
             endDelimiter: ";"
             splitStatements: true
             stripComments: true
+
+  - changeSet:
+      id: 03-group
+      author: Makar
+      changes:
+        - sqlFile:
+            path: changes/db.changeset-3-group.sql
+            relativeToChangelogFile: true
+            endDelimiter: ";"
+            splitStatements: true
+            stripComments: true
