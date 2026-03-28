@@ -42,6 +42,24 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getErrorType(), ex.getMessage());
     }
 
+    @ExceptionHandler(GroupNotFoundException.class)
+    public ResponseEntity<ApiError> handleGroupNotFoundException(GroupNotFoundException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getErrorType(), ex.getMessage());
+    }
+
+    @ExceptionHandler(NotYourGroupException.class)
+    public ResponseEntity<ApiError> handleNotYourGroupException(NotYourGroupException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getErrorType(), ex.getMessage());
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ApiError> handleTooManyRequestsException(TooManyRequestsException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.TOO_MANY_REQUESTS, ex.getErrorType(), ex.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationException(MethodArgumentNotValidException ex) {
         String errorMessage = ex.getBindingResult().getFieldErrors().stream()

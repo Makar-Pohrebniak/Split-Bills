@@ -45,7 +45,7 @@ public class UserEntity {
     private Set<RoleEntity> roles = new HashSet<>();
 
     @Builder.Default
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_friends",
             joinColumns = @JoinColumn(name = "user_id"),
