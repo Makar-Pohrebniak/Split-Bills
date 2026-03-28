@@ -1,8 +1,7 @@
 package com.example.SplitBills.controller;
 
 import com.example.SplitBills.model.dto.request.CreateGroupRequest;
-import com.example.SplitBills.model.entity.GroupEntity;
-import com.example.SplitBills.model.entity.UserEntity;
+import com.example.SplitBills.model.dto.response.GroupResponse;
 import com.example.SplitBills.service.api.GroupService;
 import com.example.SplitBills.swagger.GroupControllerSwaggerDescription;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -12,7 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,23 +22,32 @@ public class GroupController implements GroupControllerSwaggerDescription {
     private final GroupService groupService;
 
     @PostMapping("/create")
-    public ResponseEntity<GroupEntity> createGroup(
+    public ResponseEntity<GroupResponse> createGroup(
             @RequestBody CreateGroupRequest request,
-            @AuthenticationPrincipal UserEntity owner
+            @AuthenticationPrincipal UUID subId
     ) {
-        GroupEntity group = groupService.createGroup(request.name(), owner);
+        GroupResponse group = groupService.createGroup(request.name(), subId);
         return ResponseEntity.ok(group);
     }
+
     @GetMapping("/{id}")
-    public ResponseEntity<GroupEntity> getGroupById(@PathVariable Long id) {
+    public ResponseEntity<GroupResponse> getGroupById(@PathVariable Long id) {
         return ResponseEntity.ok(groupService.getGroupById(id));
     }
 
     @GetMapping("/my-groups")
-    public ResponseEntity<List<GroupEntity>> getAllGroupsBySubId(
-            @AuthenticationPrincipal(expression = "subId") String subId
+    public ResponseEntity<List<GroupResponse>> getAllGroupsBySubId(
+            @AuthenticationPrincipal UUID subId
     ) {
         return ResponseEntity.ok(groupService.getGroupsByUserSubId(subId));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteGroup(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UUID subId
+    ) {
+        groupService.deleteGroup(id, subId);
+        return ResponseEntity.noContent().build();
+    }
 }

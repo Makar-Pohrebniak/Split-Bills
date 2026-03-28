@@ -1,10 +1,11 @@
-package com.example.SplitBills.service.impl;
+package com.example.SplitBills.service;
 
 import com.example.SplitBills.exception.UserNotFoundException;
 import com.example.SplitBills.exception.YouAreNotYourFriendException;
 import com.example.SplitBills.model.dto.response.UserResponse;
 import com.example.SplitBills.model.entity.UserEntity;
 import com.example.SplitBills.repository.UserRepository;
+import com.example.SplitBills.service.impl.FriendServiceDefault;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

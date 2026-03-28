@@ -2,9 +2,12 @@ package com.example.SplitBills.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -21,15 +24,18 @@ public class GroupEntity {
     @Column(nullable = false)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private UserEntity owner;
+    @Column(name = "owner_id", nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    private UUID owner;
 
     @ManyToMany
     @JoinTable(
             name = "group_members",
             joinColumns = @JoinColumn(name = "group_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
+            inverseJoinColumns = @JoinColumn(
+                    name = "user_id",
+                    referencedColumnName = "sub_id"
+            )
     )
     private Set<UserEntity> members = new HashSet<>();
 }

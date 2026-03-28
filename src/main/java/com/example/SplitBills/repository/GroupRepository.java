@@ -11,11 +11,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface GroupRepository extends JpaRepository<GroupEntity, Integer> {
-    @Query("SELECT g FROM GroupEntity g WHERE g.id = :id")
-    Optional<GroupEntity> getGroupById(@Param("id") Long id);
+public interface GroupRepository extends JpaRepository<GroupEntity, Long> {
+
+    Optional<GroupEntity> findById(Long id);
 
     @Query("SELECT g FROM GroupEntity g JOIN g.members m WHERE m.subId = :subId")
-    List<GroupEntity> findAllByMemberSubId(@Param("subId") UUID subId);
+    List<GroupEntity> findAllByMembersSubId(@Param("subId") UUID subId);
 
 }

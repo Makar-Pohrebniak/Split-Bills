@@ -36,7 +36,9 @@ public class SecurityConfig {
     };
 
     private static final String[] PROTECTED_LIST = {
-            "/api/v1/users/**"
+            "/api/v1/users/**",
+            "/api/v1/friends/**",
+            "/api/v1/groups/**"
     };
 
     @Bean

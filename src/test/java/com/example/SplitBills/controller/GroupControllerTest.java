@@ -1,92 +1,116 @@
 package com.example.SplitBills.controller;
 
+import com.example.SplitBills.GlobalExceptionHandler;
+import com.example.SplitBills.exception.GroupNotFoundException;
+import com.example.SplitBills.exception.NotYourGroupException;
 import com.example.SplitBills.model.dto.request.CreateGroupRequest;
-import com.example.SplitBills.model.entity.GroupEntity;
-import com.example.SplitBills.model.entity.UserEntity;
-import com.example.SplitBills.security.JwtUtils;
+import com.example.SplitBills.model.dto.response.GroupResponse;
 import com.example.SplitBills.service.api.GroupService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(GroupController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
 class GroupControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @Mock
     private GroupService groupService;
 
-    @MockitoBean
-    private JwtUtils jwtUtils;
+    @InjectMocks
+    private GroupController groupController;
 
-    private UserEntity user;
-    private GroupEntity group;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private GroupResponse testResponse;
+    private final UUID subId = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        user = new UserEntity();
-        user.setSubId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        mockMvc = MockMvcBuilders.standaloneSetup(groupController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
 
-        group = new GroupEntity();
-        group.setId(1L);
-        group.setName("Test Group");
-        group.setOwner(user);
-        group.setMembers(new HashSet<>(List.of(user)));
+        testResponse = GroupResponse.builder()
+                .id(1L)
+                .name("Test Group")
+                .owner(subId)
+                .members(Set.of())
+                .build();
     }
 
     @Test
-    void createGroup_returns200() throws Exception {
-        when(groupService.createGroup(any(), any())).thenReturn(group);
+    void createGroup_Returns200() throws Exception {
+        CreateGroupRequest request = new CreateGroupRequest("Test Group");
+        when(groupService.createGroup(eq("Test Group"), any())).thenReturn(testResponse);
 
         mockMvc.perform(post("/api/v1/groups/create")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Test Group\"}")
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(
-                                new UsernamePasswordAuthenticationToken(user, null))))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Test Group"));
     }
 
     @Test
-    void getGroupById_returns200() throws Exception {
-        when(groupService.getGroupById(anyLong())).thenReturn(group);
+    void getGroupById_Returns200() throws Exception {
+        when(groupService.getGroupById(1L)).thenReturn(testResponse);
 
-        mockMvc.perform(get("/api/v1/groups/1")
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/v1/groups/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Test Group"));
+                .andExpect(jsonPath("$.id").value(1L));
     }
 
     @Test
-    void getAllGroupsBySubId_returns200() throws Exception {
-        when(groupService.getGroupsByUserSubId(any())).thenReturn(List.of(group));
+    void getGroupById_Returns404() throws Exception {
+        when(groupService.getGroupById(99L)).thenThrow(new GroupNotFoundException(99L));
 
-        mockMvc.perform(get("/api/v1/groups/my-groups")
-                        .with(SecurityMockMvcRequestPostProcessors.authentication(
-                                new UsernamePasswordAuthenticationToken(user, null)))
-                        .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/v1/groups/99"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getAllGroupsBySubId_Returns200() throws Exception {
+        when(groupService.getGroupsByUserSubId(any())).thenReturn(List.of(testResponse));
+
+        mockMvc.perform(get("/api/v1/groups/my-groups"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("Test Group"));
+    }
+
+    @Test
+    void deleteGroup_Returns204() throws Exception {
+        doNothing().when(groupService).deleteGroup(eq(1L), any());
+
+        mockMvc.perform(delete("/api/v1/groups/1"))
+                .andExpect(status().isNoContent());
+
+        verify(groupService, times(1)).deleteGroup(eq(1L), any());
+    }
+
+    @Test
+    void deleteGroup_Returns400_WhenNotOwner() throws Exception {
+        doThrow(new NotYourGroupException()).when(groupService).deleteGroup(eq(1L), any());
+
+        mockMvc.perform(delete("/api/v1/groups/1"))
+                .andExpect(status().isBadRequest());
     }
 }

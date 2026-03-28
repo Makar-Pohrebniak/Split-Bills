@@ -31,3 +31,14 @@ databaseChangeLog:
             endDelimiter: ";"
             splitStatements: true
             stripComments: true
+
+  - changeSet:
+      id: 04-groupFix
+      author: Makar
+      changes:
+        - sqlFile:
+            path: changes/db.changeset-4-groupEntity-fix.sql
+            relativeToChangelogFile: true
+            endDelimiter: ";"
+            splitStatements: true
+            stripComments: true

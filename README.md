@@ -32,7 +32,7 @@ Searching for users and friends in different ways:
 
 ## 🏗 Phase 3: Groups & participants
 Managing groups:
-* **US-8 Create a group** IN PROGRESS
+* **US-8 Create/delete/get groups**: Creating, deleting, getting all the groups.
 
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
@@ -47,6 +47,8 @@ Managing groups:
     - Auth layer: login, register have to be available and other layers only with proper authorization.
 5. **Infrastructure & Migrations (Docker & Liquibase)**:
    - The application is fully containerized with **Docker Compose**, and the database schema is managed via **Liquibase** migrations.
+6. **Limiter in creating groups**:
+   - We should be able to create groups with the same name, but if we do it every second it's bad for the app. So I added limiter.
 
 ---
 
@@ -57,14 +59,18 @@ Code quality is enforced through a rigorous unit testing suite:
 * **`AuthControllerTest`**: Full coverage of registration and login endpoints using **WebMvcTest**.
 * **`UserControllerTest`**: Full coverage of get user endpoints using **WebMvcTest**.
 * **`UserServiceTest`**: Full coverage of getting user with different ways business logic using **Mockito**.
+* **`GroupServiceTest`**: Full coverage of create/delete/get group using **Mockito**.
+* **`FriendServiceTest`**: Full coverage of add/remove/get friend using **Mockito**.
+* **`FriendControllerTest`**: Full coverage of add/remove/get friend endpoints using **WebMvcTest**.
+* **`GroupControllerTest`**: Full coverage of create/delete/get group using **WebMvcTest**.
 
 ---
 
 ## 🗺 Roadmap
 - [x] **Phase 0: Containerization** (Liquibase, Docker compose)
 - [x] **Phase 1: Foundation** (Auth, JWT, Security Config)
-- [ ] **Phase 2: Social** (User Profiles, Search, Friend System)
-- [ ] **Phase 3: Core Logic** (Groups Management, Participant Roles)
+- [x] **Phase 2: Social** (User Profiles, Search, Friend System)
+- [In progress] **Phase 3: Core Logic** (Groups Management, Participant Roles)
 - [ ] **Phase 4: Finance** (Expense Tracking, Equal/Unequal Split Algorithms)
 - [ ] **Phase 5: Optimization** (Debt Settlement Algorithm - Minimizing Transactions)
 - [ ] **Phase 6: DevOps** (Dockerization, CI/CD, Global Exception Handling)
