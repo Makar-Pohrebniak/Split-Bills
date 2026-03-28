@@ -48,5 +48,5 @@ public interface GroupControllerSwaggerDescription {
             @ApiResponse(responseCode = "401", description = "Authentication required",
                     content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
-    ResponseEntity<List<GroupEntity>> getAllGroupsBySubId(UserEntity user);
+    ResponseEntity<List<GroupEntity>> getAllGroupsBySubId(String subId);
 }

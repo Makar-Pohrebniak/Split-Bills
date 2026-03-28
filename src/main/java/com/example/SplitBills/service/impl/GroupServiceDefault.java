@@ -32,13 +32,14 @@ public class GroupServiceDefault implements GroupService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<GroupEntity> getGroupById(Long id) {
-        return groupRepository.getGroupById(id);
+    public GroupEntity getGroupById(Long id) {
+        return groupRepository.getGroupById(id)
+                .orElseThrow(() -> new GroupNotFoundException(id));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<GroupEntity> getGroupsByUserSubId(UUID subId) {
-        return groupRepository.findAllByMemberSubId(subId);
+    public List<GroupEntity> getGroupsByUserSubId(String subId) {
+        return groupRepository.findAllByMemberSubId(UUID.fromString(subId));
     }
 }

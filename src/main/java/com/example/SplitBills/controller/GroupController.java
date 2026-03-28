@@ -5,6 +5,7 @@ import com.example.SplitBills.model.entity.GroupEntity;
 import com.example.SplitBills.model.entity.UserEntity;
 import com.example.SplitBills.service.api.GroupService;
 import com.example.SplitBills.swagger.GroupControllerSwaggerDescription;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +16,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
+@SecurityRequirement(name = "Bearer Authentication")
 @RequestMapping("/api/v1/groups")
 public class GroupController implements GroupControllerSwaggerDescription {
 
@@ -30,14 +32,14 @@ public class GroupController implements GroupControllerSwaggerDescription {
     }
     @GetMapping("/{id}")
     public ResponseEntity<GroupEntity> getGroupById(@PathVariable Long id) {
-        return groupService.getGroupById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(groupService.getGroupById(id));
     }
 
     @GetMapping("/my-groups")
-    public ResponseEntity<List<GroupEntity>> getAllGroupsBySubId(@AuthenticationPrincipal UserEntity user) {
-        return ResponseEntity.ok(groupService.getGroupsByUserSubId(user.getSubId()));
+    public ResponseEntity<List<GroupEntity>> getAllGroupsBySubId(
+            @AuthenticationPrincipal(expression = "subId") String subId
+    ) {
+        return ResponseEntity.ok(groupService.getGroupsByUserSubId(subId));
     }
 
 }

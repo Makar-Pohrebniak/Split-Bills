@@ -12,7 +12,7 @@ import java.util.UUID;
 public interface GroupService {
     GroupEntity createGroup(String name, UserEntity owner);
 
-    Optional<GroupEntity> getGroupById(Long id);
+    GroupEntity getGroupById(Long id);
 
-    List<GroupEntity> getGroupsByUserSubId(UUID subId);
+    List<GroupEntity> getGroupsByUserSubId(String subId);
 }
