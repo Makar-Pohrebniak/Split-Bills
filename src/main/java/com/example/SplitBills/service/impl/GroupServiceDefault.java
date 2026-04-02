@@ -11,7 +11,6 @@ import com.example.SplitBills.model.entity.UserEntity;
 import com.example.SplitBills.repository.GroupRepository;
 import com.example.SplitBills.repository.UserRepository;
 import com.example.SplitBills.service.api.GroupService;
-import liquibase.util.Cache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

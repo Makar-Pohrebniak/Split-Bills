@@ -22,7 +22,6 @@ public class FriendServiceDefault implements FriendService {
     @Override
     @Transactional
     public void addFriend(String friendId) {
-        System.out.println("DEBUG: Прийшов friendId з контролера: " + friendId);
         UserEntity me = getCurrentUser();
 
 
@@ -58,6 +57,7 @@ public class FriendServiceDefault implements FriendService {
 
         return me.getFriends().stream()
                 .map(friends->UserResponse.builder()
+                        .subId(String.valueOf(friends.getSubId()))
                         .username(friends.getUsername())
                         .email(friends.getEmail())
                         .build())
