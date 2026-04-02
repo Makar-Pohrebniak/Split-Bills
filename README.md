@@ -32,7 +32,12 @@ Searching for users and friends in different ways:
 
 ## 🏗 Phase 3: Groups & participants
 Managing groups:
-* **US-8 Create/delete/get groups**: Creating, deleting, getting all the groups.
+* **US-8 & US-10 Create/delete/get groups**: Creating, deleting, getting all the groups.
+* **US-9 Add/remove/get members of the group**: Adding, removing, getting members.
+
+## 🏗 Phase 4: Expense management
+Managing groups:
+* **US-11 Add expense**: IN PROGRESS 
 
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
@@ -63,6 +68,8 @@ Code quality is enforced through a rigorous unit testing suite:
 * **`FriendServiceTest`**: Full coverage of add/remove/get friend using **Mockito**.
 * **`FriendControllerTest`**: Full coverage of add/remove/get friend endpoints using **WebMvcTest**.
 * **`GroupControllerTest`**: Full coverage of create/delete/get group using **WebMvcTest**.
+* **`GroupMemberServiceTest`**: Full coverage of add/remove/get member using **Mockito**.
+* **`GroupMemberControllerTest`**: Full coverage of add/remove/get member endpoints using **WebMvcTest**.
 
 ---
 
@@ -70,8 +77,8 @@ Code quality is enforced through a rigorous unit testing suite:
 - [x] **Phase 0: Containerization** (Liquibase, Docker compose)
 - [x] **Phase 1: Foundation** (Auth, JWT, Security Config)
 - [x] **Phase 2: Social** (User Profiles, Search, Friend System)
-- [In progress] **Phase 3: Core Logic** (Groups Management, Participant Roles)
-- [ ] **Phase 4: Finance** (Expense Tracking, Equal/Unequal Split Algorithms)
+- [x] **Phase 3: Core Logic** (Groups Management, Participant Roles)
+- [IN PROGRESS] **Phase 4: Finance** (Expense Tracking, Equal/Unequal Split Algorithms)
 - [ ] **Phase 5: Optimization** (Debt Settlement Algorithm - Minimizing Transactions)
 - [ ] **Phase 6: DevOps** (Dockerization, CI/CD, Global Exception Handling)
 
