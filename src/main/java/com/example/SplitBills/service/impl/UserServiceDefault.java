@@ -25,6 +25,7 @@ public class UserServiceDefault implements UserService {
                 .orElseThrow(() -> new UserNotFoundException(id));
 
         return Optional.of(UserResponse.builder()
+                .subId(String.valueOf(user.getSubId()))
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .build());
@@ -36,6 +37,7 @@ public class UserServiceDefault implements UserService {
 
         return users.stream()
                 .map(user -> UserResponse.builder()
+                        .subId(String.valueOf(user.getSubId()))
                         .username(user.getUsername())
                         .email(user.getEmail())
                         .build())
@@ -48,6 +50,7 @@ public class UserServiceDefault implements UserService {
                 .orElseThrow(() -> new UserNotFoundException(email));
 
         return Optional.of(UserResponse.builder()
+                .subId(String.valueOf(user.getSubId()))
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .build());
