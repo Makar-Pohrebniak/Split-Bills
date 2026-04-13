@@ -37,7 +37,7 @@ Managing groups:
 
 ## 🏗 Phase 4: Expense management
 Managing groups:
-* **US-11 Add expense**: IN PROGRESS 
+* **US-11 Add expense**: Done, but US-11 isn't closed yet. Still thinking about get/delete/update expense in this US.
 
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
