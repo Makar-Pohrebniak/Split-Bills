@@ -18,4 +18,7 @@ public interface GroupRepository extends JpaRepository<GroupEntity, Long> {
     @Query("SELECT g FROM GroupEntity g JOIN g.members m WHERE m.subId = :subId")
     List<GroupEntity> findAllByMembersSubId(@Param("subId") UUID subId);
 
+    @Query("SELECT COUNT(g) > 0 FROM GroupEntity g JOIN g.members m WHERE g.id = :groupId AND m.id = :userId")
+    boolean existsByGroupIdAndMemberId(@Param("groupId") Long groupId, @Param("userId") Long userId);
+
 }

@@ -53,3 +53,14 @@ databaseChangeLog:
             endDelimiter: ";"
             splitStatements: true
             stripComments: true
+
+  - changeSet:
+      id: 06-expenses-tables
+      author: Makar
+      changes:
+        - sqlFile:
+            path: changes/db.changeset-6-expenses-tables.sql
+            relativeToChangelogFile: true
+            endDelimiter: ";"
+            splitStatements: true
+            stripComments: true
