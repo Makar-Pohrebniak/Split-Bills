@@ -37,7 +37,10 @@ Managing groups:
 
 ## 🏗 Phase 4: Expense management
 Managing groups:
-* **US-11 Add expense**: Done, but US-11 isn't closed yet. Still thinking about get/delete/update expense in this US.
+* **US-11 Add Expense**: Implementing CRUD operations for expenses, allowing group members to add, update, delete, and retrieve expense details (amount, description, category, and payer).
+* **US-12 Split Equally**: Implementing logic to automatically and evenly distribute the total expense amount among all participants in the group.
+* **US-13 Split Unequally**: Adding support for custom cost distribution, enabling users to split expenses by specific percentages or fixed individual amounts.
+* **US-14 Expense history**: IN PROGRESS
 
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
@@ -70,6 +73,8 @@ Code quality is enforced through a rigorous unit testing suite:
 * **`GroupControllerTest`**: Full coverage of create/delete/get group using **WebMvcTest**.
 * **`GroupMemberServiceTest`**: Full coverage of add/remove/get member using **Mockito**.
 * **`GroupMemberControllerTest`**: Full coverage of add/remove/get member endpoints using **WebMvcTest**.
+* **`ExpenseControllerTest`**: Full coverage of add/remove/get member endpoints using **WebMvcTest**.
+* **`ExpenseServiceTest`**: Full coverage of add/remove/get member using **Mockito**.
 
 ---
 
