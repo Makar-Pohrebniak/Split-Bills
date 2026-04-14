@@ -1,12 +1,21 @@
 package com.example.SplitBills.service.api;
 
 import com.example.SplitBills.model.dto.request.AddExpenseDto;
-import org.springframework.stereotype.Service;
+import com.example.SplitBills.model.dto.request.UpdateExpenseDto;
+import com.example.SplitBills.model.dto.response.ExpenseResponseDto;
 
+import java.util.List;
 import java.util.UUID;
 
-@Service
 public interface ExpenseService {
 
     void addExpense(Long groupId, AddExpenseDto expenseDto, UUID subId);
+
+    ExpenseResponseDto getExpenseById(Long expenseId, UUID subId);
+
+    List<ExpenseResponseDto> getExpensesByGroupId(Long groupId, UUID subId);
+
+    void updateExpense(Long expenseId, UpdateExpenseDto updateDto, UUID subId);
+
+    void deleteExpense(Long expenseId, UUID subId);
 }
