@@ -57,6 +57,8 @@ Managing groups:
    - The application is fully containerized with **Docker Compose**, and the database schema is managed via **Liquibase** migrations.
 6. **Limiter in creating groups**:
    - We should be able to create groups with the same name, but if we do it every second it's bad for the app. So I added limiter.
+7. **Big Decimal**:
+   - Used BigDecimal for all monetary values instead of double or float. This prevents binary floating-point rounding errors, ensuring that every cent is accounted for and balances remain exact during complex split calculations.
 
 ---
 
