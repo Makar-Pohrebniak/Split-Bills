@@ -13,6 +13,7 @@
 * **Testing:** JUnit 5, Mockito, AssertJ
 * **DB versioning:** Liquibase
 * **Containerization:** Docker
+* **Messaging & Async:** Apache Kafka (Event-driven notifications and payment status processing)
 
 ---
 
@@ -36,11 +37,16 @@ Managing groups:
 * **US-9 Add/remove/get members of the group**: Adding, removing, getting members.
 
 ## 🏗 Phase 4: Expense management
-Managing groups:
+Managing expenses:
 * **US-11 Add Expense**: Implementing CRUD operations for expenses, allowing group members to add, update, delete, and retrieve expense details (amount, description, category, and payer).
 * **US-12 Split Equally**: Implementing logic to automatically and evenly distribute the total expense amount among all participants in the group.
 * **US-13 Split Unequally**: Adding support for custom cost distribution, enabling users to split expenses by specific percentages or fixed individual amounts.
-* **US-14 Expense history**: IN PROGRESS
+* **US-14 Expense history**: Added endpoint for expense history in the group.
+
+## 🏗 Phase 5: Optimisation
+Optimisation of payment/debt:
+* **US-15 View personal balance in the group**: Implementing logic for personal balance in the group.
+
 
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
@@ -59,7 +65,8 @@ Managing groups:
    - We should be able to create groups with the same name, but if we do it every second it's bad for the app. So I added limiter.
 7. **Big Decimal**:
    - Used BigDecimal for all monetary values instead of double or float. This prevents binary floating-point rounding errors, ensuring that every cent is accounted for and balances remain exact during complex split calculations.
-
+8. **Kafka for payment/debt processing**: 
+   - provides a durable, persistent event log that allows us to replay transactions for auditing and ensures high reliability in a decoupled event-driven architecture.
 ---
 
 ## 🧪 Testing Strategy
@@ -85,9 +92,9 @@ Code quality is enforced through a rigorous unit testing suite:
 - [x] **Phase 1: Foundation** (Auth, JWT, Security Config)
 - [x] **Phase 2: Social** (User Profiles, Search, Friend System)
 - [x] **Phase 3: Core Logic** (Groups Management, Participant Roles)
-- [IN PROGRESS] **Phase 4: Finance** (Expense Tracking, Equal/Unequal Split Algorithms)
-- [ ] **Phase 5: Optimization** (Debt Settlement Algorithm - Minimizing Transactions)
-- [ ] **Phase 6: DevOps** (Dockerization, CI/CD, Global Exception Handling)
+- [x] **Phase 4: Finance** (Expense Tracking, Equal/Unequal Split Algorithms)
+- [IN PROGRESS] **Phase 5: Optimization** (Debt Settlement Algorithm - Minimizing Transactions)
+- [ ] **Phase 6: DevOps** (Kafka, Dockerization, CI/CD, Global Exception Handling)
 
 ---
 
