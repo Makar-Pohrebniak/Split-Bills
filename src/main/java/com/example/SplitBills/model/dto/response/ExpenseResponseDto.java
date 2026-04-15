@@ -19,6 +19,8 @@ public class ExpenseResponseDto {
 
     private String description;
 
+    private String currency;
+
     private BigDecimal amount;
 
     private UUID paidBy;

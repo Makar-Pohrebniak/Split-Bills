@@ -1,5 +1,6 @@
 package com.example.SplitBills.model.entity;
 
+import com.example.SplitBills.enums.CurrencyEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -23,6 +24,10 @@ public class GroupEntity {
 
     @Column(nullable = false)
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "currency", nullable = false, length = 3)
+    private CurrencyEnum currency;
 
     @Column(name = "owner_id", nullable = false)
     @JdbcTypeCode(SqlTypes.VARCHAR)

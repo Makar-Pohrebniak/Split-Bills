@@ -64,3 +64,14 @@ databaseChangeLog:
             endDelimiter: ";"
             splitStatements: true
             stripComments: true
+
+  - changeSet:
+      id: 07-currency
+      author: Makar
+      changes:
+        - sqlFile:
+            path: changes/db.changeset-7-currency.sql
+            relativeToChangelogFile: true
+            endDelimiter: ";"
+            splitStatements: true
+            stripComments: true

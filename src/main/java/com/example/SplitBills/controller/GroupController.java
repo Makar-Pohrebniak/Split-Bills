@@ -26,7 +26,7 @@ public class GroupController implements GroupControllerSwaggerDescription {
             @RequestBody CreateGroupRequest request,
             @AuthenticationPrincipal UUID subId
     ) {
-        GroupResponse group = groupService.createGroup(request.name(), subId);
+        GroupResponse group = groupService.createGroup(request.name(), request.currency(), subId);
         return ResponseEntity.ok(group);
     }
 

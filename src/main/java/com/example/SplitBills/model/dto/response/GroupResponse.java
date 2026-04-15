@@ -1,5 +1,6 @@
 package com.example.SplitBills.model.dto.response;
 
+import com.example.SplitBills.enums.CurrencyEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,7 @@ import java.util.UUID;
 public class GroupResponse {
     private Long id;
     private String name;
+    private CurrencyEnum currency;
     private UUID owner;
     private Set<UserResponse> members;
 }

@@ -35,6 +35,7 @@ Searching for users and friends in different ways:
 Managing groups:
 * **US-8 & US-10 Create/delete/get groups**: Creating, deleting, getting all the groups.
 * **US-9 Add/remove/get members of the group**: Adding, removing, getting members.
+* **US-Additional**: Added currency to the groups. Default - UAH. 
 
 ## 🏗 Phase 4: Expense management
 Managing expenses:
@@ -45,7 +46,7 @@ Managing expenses:
 
 ## 🏗 Phase 5: Optimisation
 Optimisation of payment/debt:
-* **US-15 View personal balance in the group**: Implementing logic for personal balance in the group.
+* **US-15 View personal balance in the group**: Implementing logic for personal balance in the group. `IN PROGRESS`
 
 
 ### 🛡 Key Architectural Decisions
@@ -67,6 +68,7 @@ Optimisation of payment/debt:
    - Used BigDecimal for all monetary values instead of double or float. This prevents binary floating-point rounding errors, ensuring that every cent is accounted for and balances remain exact during complex split calculations.
 8. **Kafka for payment/debt processing**: 
    - provides a durable, persistent event log that allows us to replay transactions for auditing and ensures high reliability in a decoupled event-driven architecture.
+
 ---
 
 ## 🧪 Testing Strategy

@@ -1,5 +1,6 @@
 package com.example.SplitBills.service.impl;
 
+import com.example.SplitBills.enums.CurrencyEnum;
 import com.example.SplitBills.exception.GroupNotFoundException;
 import com.example.SplitBills.exception.NotYourGroupException;
 import com.example.SplitBills.exception.TooManyRequestsException;
@@ -33,7 +34,7 @@ public class GroupServiceDefault implements GroupService {
 
     @Override
     @Transactional
-    public GroupResponse createGroup(String groupName, UUID subId) {
+    public GroupResponse createGroup(String groupName, CurrencyEnum currency, UUID subId) {
         long currentTime = System.currentTimeMillis();
 
         long lastRequestTime = creationLocks.getOrDefault(subId, 0L);
@@ -50,6 +51,7 @@ public class GroupServiceDefault implements GroupService {
         GroupEntity group = new GroupEntity();
         group.setName(groupName);
         group.setOwner(subId);
+        group.setCurrency(currency);
         group.getMembers().add(ownerEntity);
 
         GroupEntity savedGroup = groupRepository.save(group);
@@ -91,8 +93,10 @@ public class GroupServiceDefault implements GroupService {
                 .id(entity.getId())
                 .name(entity.getName())
                 .owner(entity.getOwner())
+                .currency(entity.getCurrency())
                 .members(entity.getMembers().stream()
                         .map(user -> UserResponse.builder()
+                                .subId(String.valueOf(user.getSubId()))
                                 .username(user.getUsername())
                                 .email(user.getEmail())
                                 .build())

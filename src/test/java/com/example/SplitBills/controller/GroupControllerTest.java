@@ -1,6 +1,7 @@
 package com.example.SplitBills.controller;
 
 import com.example.SplitBills.GlobalExceptionHandler;
+import com.example.SplitBills.enums.CurrencyEnum;
 import com.example.SplitBills.exception.GroupNotFoundException;
 import com.example.SplitBills.exception.NotYourGroupException;
 import com.example.SplitBills.model.dto.request.CreateGroupRequest;
@@ -52,21 +53,25 @@ class GroupControllerTest {
                 .id(1L)
                 .name("Test Group")
                 .owner(subId)
+                .currency(CurrencyEnum.UAH)
                 .members(Set.of())
                 .build();
     }
 
     @Test
     void createGroup_Returns200() throws Exception {
-        CreateGroupRequest request = new CreateGroupRequest("Test Group");
-        when(groupService.createGroup(eq("Test Group"), any())).thenReturn(testResponse);
+        CreateGroupRequest request = new CreateGroupRequest("Test Group", CurrencyEnum.UAH);
+
+        when(groupService.createGroup(eq("Test Group"), eq(CurrencyEnum.UAH), any()))
+                .thenReturn(testResponse);
 
         mockMvc.perform(post("/api/v1/groups/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Test Group"));
+                .andExpect(jsonPath("$.name").value("Test Group"))
+                .andExpect(jsonPath("$.currency").value("UAH"));
     }
 
     @Test
