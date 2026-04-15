@@ -41,12 +41,14 @@ Managing groups:
 Managing expenses:
 * **US-11 Add Expense**: Implementing CRUD operations for expenses, allowing group members to add, update, delete, and retrieve expense details (amount, description, category, and payer).
 * **US-12 Split Equally**: Implementing logic to automatically and evenly distribute the total expense amount among all participants in the group.
-* **US-13 Split Unequally**: Adding support for custom cost distribution, enabling users to split expenses by specific percentages or fixed individual amounts.
+* **US-13 Split Unequally**: `REMOVED` trust your friends.
 * **US-14 Expense history**: Added endpoint for expense history in the group.
 
 ## 🏗 Phase 5: Optimisation
 Optimisation of payment/debt:
-* **US-15 View personal balance in the group**: Implementing logic for personal balance in the group. `IN PROGRESS`
+* **US-15 View personal balance in the group**: Implementing logic for personal balance in the group.
+* **US-16**: IN PROGRESS
+* **US-17**: IN PROGRESS
 
 
 ### 🛡 Key Architectural Decisions
@@ -68,6 +70,8 @@ Optimisation of payment/debt:
    - Used BigDecimal for all monetary values instead of double or float. This prevents binary floating-point rounding errors, ensuring that every cent is accounted for and balances remain exact during complex split calculations.
 8. **Kafka for payment/debt processing**: 
    - provides a durable, persistent event log that allows us to replay transactions for auditing and ensures high reliability in a decoupled event-driven architecture.
+9. **Removed Unequal split**: 
+   - real friendship cost more than money.
 
 ---
 

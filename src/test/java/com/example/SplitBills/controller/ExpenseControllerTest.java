@@ -3,6 +3,7 @@ package com.example.SplitBills.controller;
 import com.example.SplitBills.model.dto.request.AddExpenseDto;
 import com.example.SplitBills.model.dto.request.UpdateExpenseDto;
 import com.example.SplitBills.model.dto.response.ExpenseResponseDto;
+import com.example.SplitBills.model.dto.response.PersonalBalanceResponseDto;
 import com.example.SplitBills.security.JwtUtils;
 import com.example.SplitBills.service.api.ExpenseService;
 import org.junit.jupiter.api.Test;
@@ -243,6 +244,44 @@ class ExpenseControllerTest {
 
         mockMvc.perform(delete("/api/v1/expenses/" + EXPENSE_ID)
                         .with(csrf()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    void getUserBalance_200() throws Exception {
+        PersonalBalanceResponseDto response = new PersonalBalanceResponseDto(
+                BigDecimal.valueOf(500.00),
+                BigDecimal.valueOf(200.00),
+                BigDecimal.valueOf(300.00)
+        );
+
+        when(expenseService.getUserBalanceInGroup(eq(GROUP_ID), any())).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/expenses/group/" + GROUP_ID + "/balance"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalPaidByMe").value(500.00))
+                .andExpect(jsonPath("$.totalMyShares").value(200.00))
+                .andExpect(jsonPath("$.netBalance").value(300.00));
+    }
+
+    @Test
+    @WithMockUser
+    void getUserBalance_403() throws Exception {
+        when(expenseService.getUserBalanceInGroup(any(), any()))
+                .thenThrow(new AccessDeniedException("Access denied"));
+
+        mockMvc.perform(get("/api/v1/expenses/group/" + GROUP_ID + "/balance"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    void getUserBalance_404() throws Exception {
+        when(expenseService.getUserBalanceInGroup(any(), any()))
+                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Group not found"));
+
+        mockMvc.perform(get("/api/v1/expenses/group/" + GROUP_ID + "/balance"))
                 .andExpect(status().isNotFound());
     }
 }

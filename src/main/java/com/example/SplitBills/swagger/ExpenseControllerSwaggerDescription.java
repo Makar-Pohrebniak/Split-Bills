@@ -4,6 +4,7 @@ import com.example.SplitBills.exception.ApiError;
 import com.example.SplitBills.model.dto.request.AddExpenseDto;
 import com.example.SplitBills.model.dto.request.UpdateExpenseDto;
 import com.example.SplitBills.model.dto.response.ExpenseResponseDto;
+import com.example.SplitBills.model.dto.response.PersonalBalanceResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -73,4 +74,15 @@ public interface ExpenseControllerSwaggerDescription {
                     content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     ResponseEntity<Void> deleteExpense(Long expenseId, UUID subId);
+
+    @Operation(summary = "Get personal balance in a group",
+            description = "Calculates how much the user paid, their total shares, and the net balance within a specific group.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved personal balance"),
+            @ApiResponse(responseCode = "403", description = "Access denied: you are not a member of this group",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "404", description = "Group not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<PersonalBalanceResponseDto> getUserBalance(Long groupId, UUID subId);
 }

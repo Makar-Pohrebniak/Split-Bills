@@ -1,9 +1,11 @@
 package com.example.SplitBills.service.impl;
 
+import com.example.SplitBills.exception.GroupNotFoundException;
 import com.example.SplitBills.model.dto.request.AddExpenseDto;
 import com.example.SplitBills.model.dto.request.ExpenseShareDto;
 import com.example.SplitBills.model.dto.request.UpdateExpenseDto;
 import com.example.SplitBills.model.dto.response.ExpenseResponseDto;
+import com.example.SplitBills.model.dto.response.PersonalBalanceResponseDto;
 import com.example.SplitBills.model.entity.ExpenseEntity;
 import com.example.SplitBills.model.entity.ExpenseShare;
 import com.example.SplitBills.model.entity.GroupEntity;
@@ -35,7 +37,7 @@ public class ExpenseServiceDefault implements ExpenseService {
     @Transactional
     public void addExpense(Long groupId, AddExpenseDto expenseDto, UUID subId) {
         GroupEntity group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
 
         UserEntity payer = group.getMembers().stream()
                 .filter(m -> m.getSubId().equals(subId))
@@ -50,11 +52,7 @@ public class ExpenseServiceDefault implements ExpenseService {
         expense.setCreatedAt(LocalDateTime.now());
         expense.setShares(new ArrayList<>());
 
-        if (expenseDto.shares() == null || expenseDto.shares().isEmpty()) {
-            calculateEqualShares(expense, group.getMembers(), expenseDto.amount());
-        } else {
-            validateAndCreateCustomShares(expense, expenseDto.shares(), group);
-        }
+        calculateEqualShares(expense, group.getMembers(), expenseDto.amount());
 
         expenseRepository.save(expense);
     }
@@ -74,7 +72,7 @@ public class ExpenseServiceDefault implements ExpenseService {
     @Transactional(readOnly = true)
     public List<ExpenseResponseDto> getExpensesByGroupId(Long groupId, UUID subId) {
         GroupEntity group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
 
         validateMember(group, subId);
 
@@ -113,6 +111,34 @@ public class ExpenseServiceDefault implements ExpenseService {
         }
 
         expenseRepository.delete(expense);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PersonalBalanceResponseDto getUserBalanceInGroup(Long groupId, UUID subId) {
+        GroupEntity group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+
+        validateMember(group, subId);
+
+        List<ExpenseEntity> groupExpenses = expenseRepository.findByGroupId(groupId);
+
+        BigDecimal totalPaidByMe = groupExpenses.stream()
+                .filter(e -> e.getPayer().getSubId().equals(subId))
+                .map(ExpenseEntity::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalMyShares = groupExpenses.stream()
+                .flatMap(e -> e.getShares().stream())
+                .filter(s -> s.getUser().getSubId().equals(subId))
+                .map(ExpenseShare::getShareAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new PersonalBalanceResponseDto(
+                totalPaidByMe,
+                totalMyShares,
+                totalPaidByMe.subtract(totalMyShares)
+        );
     }
 
     private void calculateEqualShares(ExpenseEntity expense, Set<UserEntity> members, BigDecimal totalAmount) {

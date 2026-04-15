@@ -3,6 +3,7 @@ package com.example.SplitBills.controller;
 import com.example.SplitBills.model.dto.request.AddExpenseDto;
 import com.example.SplitBills.model.dto.request.UpdateExpenseDto;
 import com.example.SplitBills.model.dto.response.ExpenseResponseDto;
+import com.example.SplitBills.model.dto.response.PersonalBalanceResponseDto;
 import com.example.SplitBills.service.api.ExpenseService;
 import com.example.SplitBills.swagger.ExpenseControllerSwaggerDescription;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -72,5 +73,14 @@ public class ExpenseController implements ExpenseControllerSwaggerDescription {
     ) {
         expenseService.deleteExpense(expenseId, subId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    @GetMapping("/group/{groupId}/balance")
+    public ResponseEntity<PersonalBalanceResponseDto> getUserBalance(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal UUID subId
+    ) {
+        return ResponseEntity.ok(expenseService.getUserBalanceInGroup(groupId, subId));
     }
 }

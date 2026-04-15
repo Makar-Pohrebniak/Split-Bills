@@ -11,6 +11,10 @@ import java.util.List;
 @Repository
 public interface ExpenseRepository extends JpaRepository<ExpenseEntity,Long> {
 
-    @Query("SELECT e FROM ExpenseEntity e JOIN FETCH e.payer WHERE e.group.id = :groupId ORDER BY e.createdAt DESC")
+    @Query("SELECT DISTINCT e FROM ExpenseEntity e " +
+            "JOIN FETCH e.payer " +
+            "JOIN FETCH e.shares " +
+            "WHERE e.group.id = :groupId " +
+            "ORDER BY e.createdAt DESC")
     List<ExpenseEntity> findByGroupId(@Param("groupId") Long groupId);
 }
