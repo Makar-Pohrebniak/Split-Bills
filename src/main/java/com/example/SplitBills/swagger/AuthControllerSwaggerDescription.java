@@ -5,6 +5,7 @@ import com.example.SplitBills.model.dto.request.LoginRequest;
 import com.example.SplitBills.model.dto.request.RegisterRequest;
 import com.example.SplitBills.model.dto.response.LoginResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -65,4 +66,15 @@ public interface AuthControllerSwaggerDescription {
             )
     })
     ResponseEntity<LoginResponse> login(LoginRequest request);
+
+    @Operation(summary = "Refresh JWT token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tokens refreshed"),
+            @ApiResponse(responseCode = "400", description = "Invalid token", content = @Content)
+    })
+    ResponseEntity<LoginResponse> refresh(@Parameter(description = "Refresh token") String refreshToken);
+
+    @Operation(summary = "Logout user")
+    @ApiResponse(responseCode = "200", description = "Logged out successfully")
+    ResponseEntity<String> logout(@Parameter(description = "Refresh token to delete") String refreshToken);
 }

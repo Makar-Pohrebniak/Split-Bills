@@ -23,12 +23,24 @@ public class JwtUtils {
     @Value("${jwt.expirationMs}")
     private Long jwtExpirationMs;
 
+    @Value("${jwt.refreshExpirationMs}")
+    private Long jwtRefreshExpirationMs;
+
     public String generateToken(UUID subId, List<String> roles) {
         return Jwts.builder()
                 .subject(subId.toString())
                 .claims(Map.of("roles", roles))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public String generateRefreshToken(UUID subId) {
+        return Jwts.builder()
+                .subject(subId.toString())
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtRefreshExpirationMs))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -41,6 +53,10 @@ public class JwtUtils {
     public boolean isTokenValid(String token, UUID subId) {
         final UUID extractedSubId = extractSubId(token);
         return (extractedSubId.equals(subId) && !isTokenExpired(token));
+    }
+
+    public boolean isTokenExpired(String token) {
+        return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -56,13 +72,10 @@ public class JwtUtils {
                 .getPayload();
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> extractRoles(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("roles", List.class);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
     public Long getExpirationMs() {

@@ -71,6 +71,12 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ErrorType.VALIDATION_ERROR, errorMessage);
     }
 
+    @ExceptionHandler(BadRefreshTokenException.class)
+    public ResponseEntity<ApiError> handleGroupNotFoundException(BadRefreshTokenException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getErrorType(), ex.getMessage());
+    }
+
     private ResponseEntity<ApiError> buildResponse(HttpStatus status, ErrorType type, String message) {
         ApiError apiError = ApiError.builder()
                 .dateTime(Instant.now())

@@ -9,7 +9,7 @@
 * **Framework:** Spring Boot 3.x
 * **Security:** Spring Security, Stateless JWT Authentication
 * **Persistence:** Spring Data JPA (Hibernate 6)
-* **Database:** MySQL 8.x (Optimized for UUID storage)
+* **Database:** MySQL 8.x (Optimized for UUID storage), Redis
 * **Testing:** JUnit 5, Mockito, AssertJ
 * **DB versioning:** Liquibase
 * **Containerization:** Docker
@@ -72,6 +72,9 @@ Optimisation of payment/debt:
    - provides a durable, persistent event log that allows us to replay transactions for auditing and ensures high reliability in a decoupled event-driven architecture.
 9. **Removed Unequal split**: 
    - real friendship cost more than money.
+10. **Redis**:
+   - Using Redis for refresh tokens is the right choice because its built-in TTL (Time-To-Live) mechanism and high-speed in-memory storage perfectly handle the ephemeral nature of session tokens while ensuring minimal latency during authentication.
+
 
 ---
 

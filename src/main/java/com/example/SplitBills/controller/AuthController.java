@@ -31,4 +31,16 @@ public class AuthController implements AuthControllerSwaggerDescription {
         LoginResponse response = authService.login(request.getEmail(), request.getPassword());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(@RequestParam String refreshToken) {
+        LoginResponse response = authService.refresh(refreshToken);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestParam String refreshToken) {
+        authService.logout(refreshToken);
+        return new ResponseEntity<>("Logged out successfully", HttpStatus.OK);
+    }
 }

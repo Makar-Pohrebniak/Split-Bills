@@ -1,7 +1,9 @@
 package com.example.SplitBills.controller;
 
+import com.example.SplitBills.exception.BadRefreshTokenException;
 import com.example.SplitBills.exception.IncorrectPasswordException;
 import com.example.SplitBills.exception.UserAlreadyExistsException;
+import com.example.SplitBills.exception.UserNotFoundException;
 import com.example.SplitBills.model.dto.request.LoginRequest;
 import com.example.SplitBills.model.dto.request.RegisterRequest;
 import com.example.SplitBills.model.dto.response.LoginResponse;
@@ -18,6 +20,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -111,5 +114,49 @@ public class AuthControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.errorType").value("INCORRECT_PASSWORD"))
                 .andExpect(jsonPath("$.errorMessage").value("Incorrect Password"));
+    }
+
+    @Test
+    void refresh_returns200() throws Exception {
+        String oldRefreshToken = "old-refresh-token";
+        LoginResponse loginResponse = LoginResponse.builder()
+                .token("new-access-token")
+                .refreshToken("new-refresh-token")
+                .username("John")
+                .build();
+
+        when(authService.refresh(oldRefreshToken)).thenReturn(loginResponse);
+
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .param("refreshToken", oldRefreshToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("new-access-token"))
+                .andExpect(jsonPath("$.refreshToken").value("new-refresh-token"));
+    }
+
+    @Test
+    void logout_returns200() throws Exception {
+        String refreshToken = "token-to-delete";
+
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .param("refreshToken", refreshToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Logged out successfully"));
+
+        verify(authService).logout(refreshToken);
+    }
+
+    @Test
+    void refreshWithInvalidToken_returns400() throws Exception {
+        String invalidToken = "invalid-token";
+
+        when(authService.refresh(invalidToken))
+                .thenThrow(new BadRefreshTokenException());
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .param("refreshToken", invalidToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }

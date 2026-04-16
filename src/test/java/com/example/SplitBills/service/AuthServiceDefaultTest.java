@@ -9,6 +9,7 @@ import com.example.SplitBills.model.dto.request.RegisterRequest;
 import com.example.SplitBills.model.dto.response.LoginResponse;
 import com.example.SplitBills.model.entity.RoleEntity;
 import com.example.SplitBills.model.entity.UserEntity;
+import com.example.SplitBills.repository.RefreshTokenRepository;
 import com.example.SplitBills.repository.RoleRepository;
 import com.example.SplitBills.repository.UserRepository;
 import com.example.SplitBills.security.JwtUtils;
@@ -20,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +40,9 @@ class AuthServiceDefaultTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Mock
     private JwtUtils jwtUtils;
@@ -64,6 +69,8 @@ class AuthServiceDefaultTest {
                 .password("encoded_password")
                 .roles(Set.of(userRole))
                 .build();
+
+        ReflectionTestUtils.setField(authService, "refreshExpirationMs", 3600000L);
     }
 
     @Test
@@ -114,23 +121,22 @@ class AuthServiceDefaultTest {
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(testUser));
         when(passwordEncoder.matches(rawPassword, testUser.getPassword())).thenReturn(true);
-        when(jwtUtils.generateToken(testUser.getSubId(), expectedRoles)).thenReturn("valid.jwt.token");
+        when(jwtUtils.generateToken(testUser.getSubId(), expectedRoles)).thenReturn("access.token");
+        when(jwtUtils.generateRefreshToken(testUser.getSubId())).thenReturn("refresh.token");
         when(jwtUtils.getExpirationMs()).thenReturn(3600000L);
 
         LoginResponse response = authService.login(email, rawPassword);
 
         assertAll(
                 () -> assertNotNull(response),
-                () -> assertEquals("valid.jwt.token", response.getToken()),
+                () -> assertEquals("access.token", response.getToken()),
+                () -> assertEquals("refresh.token", response.getRefreshToken()),
                 () -> assertEquals("Ihor", response.getUsername()),
                 () -> assertEquals(1L, response.getUserId()),
-                () -> assertEquals(email, response.getEmail()),
-                () -> assertEquals(3600000L, response.getExpirationTime())
+                () -> assertEquals(email, response.getEmail())
         );
 
-        verify(userRepository).findByEmail(email);
-        verify(passwordEncoder).matches(rawPassword, "encoded_password");
-        verify(jwtUtils).generateToken(testUser.getSubId(), expectedRoles);
+        verify(refreshTokenRepository).save(any());
     }
 
     @Test
@@ -156,5 +162,80 @@ class AuthServiceDefaultTest {
         );
 
         verify(jwtUtils, never()).generateToken(any(), any());
+    }
+
+    @Test
+    void refresh_Success_ShouldReturnNewLoginResponse() {
+        String oldRefreshToken = "old_refresh_token";
+        com.example.SplitBills.security.RefreshTokenRedis storedToken = com.example.SplitBills.security.RefreshTokenRedis.builder()
+                .token(oldRefreshToken)
+                .subId(testUser.getSubId())
+                .build();
+
+        when(refreshTokenRepository.findById(oldRefreshToken)).thenReturn(Optional.of(storedToken));
+        when(userRepository.findBySubId(testUser.getSubId().toString())).thenReturn(Optional.of(testUser));
+        when(jwtUtils.generateToken(any(), any())).thenReturn("new_access_token");
+        when(jwtUtils.generateRefreshToken(any())).thenReturn("new_refresh_token");
+        when(jwtUtils.getExpirationMs()).thenReturn(3600000L);
+
+        LoginResponse response = authService.refresh(oldRefreshToken);
+
+        assertNotNull(response);
+        assertEquals("new_access_token", response.getToken());
+        assertEquals("new_refresh_token", response.getRefreshToken());
+        verify(refreshTokenRepository).deleteById(oldRefreshToken);
+        verify(refreshTokenRepository).save(any());
+    }
+
+    @Test
+    void refresh_InvalidToken_ShouldThrowException() {
+        String invalidToken = "invalid_token";
+        when(refreshTokenRepository.findById(invalidToken)).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                authService.refresh(invalidToken)
+        );
+
+        assertEquals("Invalid or expired refresh token", exception.getMessage());
+        verify(refreshTokenRepository, never()).deleteById(anyString());
+    }
+
+    @Test
+    void logout_ShouldDeleteTokenFromRepository() {
+        String tokenToDelete = "token_to_delete";
+
+        authService.logout(tokenToDelete);
+
+        verify(refreshTokenRepository).deleteById(tokenToDelete);
+    }
+
+    @Test
+    void register_EmailAlreadyExists_ShouldThrowException() {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("NewUser");
+        request.setEmail("existing@gmail.com");
+
+        when(userRepository.existsByUsername("NewUser")).thenReturn(false);
+        when(userRepository.existsByEmail("existing@gmail.com")).thenReturn(true);
+
+        assertThrows(UserAlreadyExistsException.class, () -> authService.register(request));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void register_DefaultRoleNotFound_ShouldThrowException() {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("John");
+        request.setEmail("john@gmail.com");
+
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(roleRepository.findByRole(Role.USER)).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                authService.register(request)
+        );
+
+        assertTrue(exception.getMessage().contains("Default role USER not found"));
     }
 }

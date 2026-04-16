@@ -10,4 +10,8 @@ public interface AuthService {
     String register(RegisterRequest request);
 
     LoginResponse login(String email, String password);
+
+    LoginResponse refresh(String oldRefreshToken);
+
+    void logout(String refreshToken);
 }

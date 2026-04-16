@@ -1,6 +1,6 @@
 package com.example.SplitBills.security;
 
-import com.example.SplitBills.security.JwtUtils;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -8,9 +8,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class JwtUtilsTest {
 
@@ -21,6 +19,7 @@ class JwtUtilsTest {
         jwtUtils = new JwtUtils();
         ReflectionTestUtils.setField(jwtUtils, "jwtSecret", "mySuperSecretKeyThatIsAtLeast32CharactersLong12345");
         ReflectionTestUtils.setField(jwtUtils, "jwtExpirationMs", 3600000L);
+        ReflectionTestUtils.setField(jwtUtils, "jwtRefreshExpirationMs", 7200000L);
     }
 
     @Test
@@ -58,5 +57,52 @@ class JwtUtilsTest {
         assertEquals(2, extractedRoles.size());
         assertTrue(extractedRoles.contains("ROLE_USER"));
         assertTrue(extractedRoles.contains("ROLE_ADMIN"));
+    }
+
+    @Test
+    void shouldGenerateRefreshTokenCorrectly() {
+        UUID subId = UUID.randomUUID();
+
+        String refreshToken = jwtUtils.generateRefreshToken(subId);
+        UUID actualSubId = jwtUtils.extractSubId(refreshToken);
+
+        assertNotNull(refreshToken);
+        assertEquals(subId, actualSubId);
+    }
+
+    @Test
+    void shouldReturnFalseWhenTokenIsInvalidForDifferentSubId() {
+        UUID subId1 = UUID.randomUUID();
+        UUID subId2 = UUID.randomUUID();
+        String token = jwtUtils.generateToken(subId1, List.of("ROLE_USER"));
+
+        boolean isValid = jwtUtils.isTokenValid(token, subId2);
+
+        assertFalse(isValid);
+    }
+
+    @Test
+    void shouldCheckTokenExpirationCorrectly() {
+        UUID subId = UUID.randomUUID();
+        String token = jwtUtils.generateToken(subId, List.of("ROLE_USER"));
+
+        boolean isExpired = jwtUtils.isTokenExpired(token);
+
+        assertFalse(isExpired);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenTokenIsExpired() {
+        ReflectionTestUtils.setField(jwtUtils, "jwtExpirationMs", -1000L);
+        UUID subId = UUID.randomUUID();
+        String token = jwtUtils.generateToken(subId, List.of("ROLE_USER"));
+
+        assertThrows(ExpiredJwtException.class, () -> jwtUtils.isTokenExpired(token));
+    }
+
+    @Test
+    void shouldReturnCorrectExpirationMs() {
+        Long expiration = jwtUtils.getExpirationMs();
+        assertEquals(3600000L, expiration);
     }
 }

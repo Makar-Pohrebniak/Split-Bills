@@ -10,6 +10,11 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
   liquibase:
     change-log: classpath:db/db.changelog-master.yaml
 
@@ -26,6 +31,7 @@ springdoc:
 jwt:
   secret: ${JWT_SECRET}
   expirationMs: ${JWT_EXPIRATION}
+  refreshExpirationMs: ${JWT_REFRESH_EXPIRATION}
 
 logging:
   level:
