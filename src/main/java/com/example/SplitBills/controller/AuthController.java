@@ -5,6 +5,7 @@ import com.example.SplitBills.model.dto.request.RegisterRequest;
 import com.example.SplitBills.model.dto.response.LoginResponse;
 import com.example.SplitBills.service.api.AuthService;
 import com.example.SplitBills.swagger.AuthControllerSwaggerDescription;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,12 +34,14 @@ public class AuthController implements AuthControllerSwaggerDescription {
     }
 
     @PostMapping("/refresh")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<LoginResponse> refresh(@RequestParam String refreshToken) {
         LoginResponse response = authService.refresh(refreshToken);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/logout")
+    @SecurityRequirement(name = "Bearer Authentication")
     public ResponseEntity<String> logout(@RequestParam String refreshToken) {
         authService.logout(refreshToken);
         return new ResponseEntity<>("Logged out successfully", HttpStatus.OK);

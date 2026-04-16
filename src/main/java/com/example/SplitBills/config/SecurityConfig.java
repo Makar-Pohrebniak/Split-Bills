@@ -27,7 +27,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
 
     private static final String[] WHITE_LIST = {
-            "/api/v1/auth/**",
+            "/api/v1/auth/login",
+            "/api/v1/auth/register",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
@@ -37,7 +38,10 @@ public class SecurityConfig {
     private static final String[] PROTECTED_LIST = {
             "/api/v1/users/**",
             "/api/v1/friends/**",
-            "/api/v1/groups/**"
+            "/api/v1/groups/**",
+            "/api/v1/expenses/**",
+            "/api/v1/auth/refresh",
+            "/api/v1/auth/logout"
     };
 
     @Bean
