@@ -57,4 +57,19 @@ public class PaymentController implements PaymentControllerSwaggerDescription {
     ) {
         return ResponseEntity.ok(paymentService.getGroupPayments(groupId));
     }
+
+    @GetMapping("/group/{groupId}/confirmed")
+    public ResponseEntity<List<PaymentResponseDto>> getConfirmedGroupPayments(
+            @PathVariable Long groupId
+    ) {
+        return ResponseEntity.ok(paymentService.getConfirmedGroupPayments(groupId));
+    }
+
+    @GetMapping("/group/{groupId}/my")
+    public ResponseEntity<List<PaymentResponseDto>> getMyPaymentsInGroup(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal UUID subId
+    ) {
+        return ResponseEntity.ok(paymentService.getUserPaymentsInGroup(groupId, subId));
+    }
 }

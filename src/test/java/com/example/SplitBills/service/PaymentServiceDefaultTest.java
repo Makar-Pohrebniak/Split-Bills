@@ -233,4 +233,56 @@ class PaymentServiceDefaultTest {
         paymentService.getGroupPayments(10L);
         verify(paymentRepository).findAllByGroupId(10L);
     }
+
+    @Test
+    void getConfirmedGroupPayments_Success() {
+        PaymentEntity confirmedPayment = PaymentEntity.builder()
+                .id(1L)
+                .groupId(10L)
+                .status(PaymentStatus.CONFIRMED)
+                .amount(BigDecimal.TEN)
+                .build();
+
+        when(paymentRepository.findAllConfirmedByGroupId(10L)).thenReturn(List.of(confirmedPayment));
+
+        List<PaymentResponseDto> result = paymentService.getConfirmedGroupPayments(10L);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(PaymentStatus.CONFIRMED, result.get(0).getStatus());
+        verify(paymentRepository).findAllConfirmedByGroupId(10L);
+    }
+
+    @Test
+    void getUserPaymentsInGroup_Success() {
+        PaymentEntity userPayment = PaymentEntity.builder()
+                .id(1L)
+                .senderId(1L)
+                .receiverId(2L)
+                .groupId(10L)
+                .amount(BigDecimal.TEN)
+                .build();
+
+        when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
+        when(paymentRepository.findAllUserPaymentsInGroup(1L, 10L)).thenReturn(List.of(userPayment));
+
+        List<PaymentResponseDto> result = paymentService.getUserPaymentsInGroup(10L, senderSubId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(1L, result.get(0).getSenderId());
+        verify(groupRepository).findById(10L);
+        verify(paymentRepository).findAllUserPaymentsInGroup(1L, 10L);
+    }
+
+    @Test
+    void getUserPaymentsInGroup_ThrowsException_WhenUserNotInGroup() {
+        UUID strangerSubId = UUID.randomUUID();
+        when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
+
+        assertThrows(UnauthorizedAccessException.class, () ->
+                paymentService.getUserPaymentsInGroup(10L, strangerSubId));
+
+        verify(paymentRepository, never()).findAllUserPaymentsInGroup(anyLong(), anyLong());
+    }
 }

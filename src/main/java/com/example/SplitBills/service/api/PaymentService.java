@@ -14,4 +14,8 @@ public interface PaymentService {
     PaymentResponseDto declinePayment(Long paymentId, UUID adminSubId);
 
     List<PaymentResponseDto> getGroupPayments(Long groupId);
+
+    List<PaymentResponseDto> getConfirmedGroupPayments(Long groupId);
+
+    List<PaymentResponseDto> getUserPaymentsInGroup(Long groupId, UUID userSubId);
 }

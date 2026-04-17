@@ -123,6 +123,30 @@ public class PaymentServiceDefault implements PaymentService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<PaymentResponseDto> getConfirmedGroupPayments(Long groupId) {
+        return paymentRepository.findAllConfirmedByGroupId(groupId).stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PaymentResponseDto> getUserPaymentsInGroup(Long groupId, UUID userSubId) {
+        GroupEntity group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+
+        UserEntity user = group.getMembers().stream()
+                .filter(m -> m.getSubId().equals(userSubId))
+                .findFirst()
+                .orElseThrow(() -> new UnauthorizedAccessException("User not in group"));
+
+        return paymentRepository.findAllUserPaymentsInGroup(user.getId(), groupId).stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+    }
+
     private PaymentResponseDto mapToResponseDto(PaymentEntity payment) {
         return PaymentResponseDto.builder()
                 .id(payment.getId())

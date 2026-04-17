@@ -164,4 +164,44 @@ class PaymentControllerTest {
         mockMvc.perform(post("/api/v1/payments/group/" + GROUP_ID).with(csrf()))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @WithMockUser
+    void getConfirmedGroupPayments_200() throws Exception {
+        PaymentResponseDto response = PaymentResponseDto.builder()
+                .id(PAYMENT_ID)
+                .status(PaymentStatus.CONFIRMED)
+                .build();
+
+        when(paymentService.getConfirmedGroupPayments(GROUP_ID)).thenReturn(List.of(response));
+
+        mockMvc.perform(get("/api/v1/payments/group/" + GROUP_ID + "/confirmed"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].status").value("CONFIRMED"));
+    }
+
+    @Test
+    @WithMockUser
+    void getMyPaymentsInGroup_200() throws Exception {
+        PaymentResponseDto response = PaymentResponseDto.builder()
+                .id(PAYMENT_ID)
+                .amount(BigDecimal.valueOf(100))
+                .build();
+
+        when(paymentService.getUserPaymentsInGroup(eq(GROUP_ID), any())).thenReturn(List.of(response));
+
+        mockMvc.perform(get("/api/v1/payments/group/" + GROUP_ID + "/my"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(PAYMENT_ID));
+    }
+
+    @Test
+    @WithMockUser
+    void getMyPaymentsInGroup_403_NotMember() throws Exception {
+        when(paymentService.getUserPaymentsInGroup(eq(GROUP_ID), any()))
+                .thenThrow(new UnauthorizedAccessException("User not in group"));
+
+        mockMvc.perform(get("/api/v1/payments/group/" + GROUP_ID + "/my"))
+                .andExpect(status().isForbidden());
+    }
 }

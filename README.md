@@ -47,9 +47,13 @@ Managing expenses:
 ## 🏗 Phase 5: Optimisation
 Optimisation of payment/debt:
 * **US-15 View personal balance in the group**: Implementing logic for personal balance in the group.
-* **US-16**: IN PROGRESS
-* **US-17**: IN PROGRESS
+* **US-16 Payment/debt settling**: Implemented payment/debt settling process
 
+## 🏗 Phase 6: DevOps
+Optimisation of payment/debt:
+* **GlobalExceptionHandler**: already implemented.
+* **US-17 Kafka**: IN PROGRESS
+* **US-18 CI/CD**: IN PROGRESS
 
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
@@ -80,19 +84,21 @@ Optimisation of payment/debt:
 
 ## 🧪 Testing Strategy
 Code quality is enforced through a rigorous unit testing suite:
-* **`AuthServiceTest`**: Full coverage of registration and login business logic using **Mockito**.
+* **`AuthServiceDefaultTest`**: Full coverage of registration and login business logic using **Mockito**.
 * **`JwtUtilsTest`**: Verification of the token lifecycle (generation/validation) using **`ReflectionTestUtils`** to simulate the Spring environment without the overhead of a full application context.
 * **`AuthControllerTest`**: Full coverage of registration and login endpoints using **WebMvcTest**.
 * **`UserControllerTest`**: Full coverage of get user endpoints using **WebMvcTest**.
-* **`UserServiceTest`**: Full coverage of getting user with different ways business logic using **Mockito**.
-* **`GroupServiceTest`**: Full coverage of create/delete/get group using **Mockito**.
-* **`FriendServiceTest`**: Full coverage of add/remove/get friend using **Mockito**.
+* **`UserServiceDefaultTest`**: Full coverage of getting user with different ways business logic using **Mockito**.
+* **`GroupServiceDefaultTest`**: Full coverage of create/delete/get group using **Mockito**.
+* **`FriendServiceDefaultTest`**: Full coverage of add/remove/get friend using **Mockito**.
 * **`FriendControllerTest`**: Full coverage of add/remove/get friend endpoints using **WebMvcTest**.
 * **`GroupControllerTest`**: Full coverage of create/delete/get group using **WebMvcTest**.
-* **`GroupMemberServiceTest`**: Full coverage of add/remove/get member using **Mockito**.
+* **`GroupMemberServiceDefaultTest`**: Full coverage of add/remove/get member using **Mockito**.
 * **`GroupMemberControllerTest`**: Full coverage of add/remove/get member endpoints using **WebMvcTest**.
-* **`ExpenseControllerTest`**: Full coverage of add/remove/get member endpoints using **WebMvcTest**.
-* **`ExpenseServiceTest`**: Full coverage of add/remove/get member using **Mockito**.
+* **`ExpenseControllerTest`**: Full coverage of add/remove/get expense endpoints using **WebMvcTest**.
+* **`ExpenseServiceDefaultTest`**: Full coverage of add/remove/get expense using **Mockito**.
+* **`PaymentControllerTest`**: Full coverage of add/remove/get/approve/decline payment endpoints using **WebMvcTest**.
+* **`PaymentServiceDefaultTest`**: Full coverage of add/remove/get/approve/decline payment using **Mockito**.
 
 ---
 
@@ -102,8 +108,8 @@ Code quality is enforced through a rigorous unit testing suite:
 - [x] **Phase 2: Social** (User Profiles, Search, Friend System)
 - [x] **Phase 3: Core Logic** (Groups Management, Participant Roles)
 - [x] **Phase 4: Finance** (Expense Tracking, Equal/Unequal Split Algorithms)
-- [IN PROGRESS] **Phase 5: Optimization** (Debt Settlement Algorithm - Minimizing Transactions)
-- [ ] **Phase 6: DevOps** (Kafka, Dockerization, CI/CD, Global Exception Handling)
+- [x] **Phase 5: Optimization** (Debt Settlement Algorithm - Minimizing Transactions)
+- [`IN PROGRESS`] **Phase 6: DevOps** (Kafka, Dockerization, CI/CD, Global Exception Handling)
 
 ---
 
@@ -118,5 +124,5 @@ Code quality is enforced through a rigorous unit testing suite:
 1. This is my pet project, here I want to show you how I can code because I want to be master of coding one day :)
 2. I use AI like an assistant, like Tony Stark used Jarvis, but I'm not a millionaire yet :)
 3. I believe that AI is our future, but to uncover full potential of AI is in the hands of smart and lazy developers.
-3. I don't know if I will be able to finish this project, but I'll do my best.
-4. So enjoy and don't let people use you :) (for free)
+4. I don't know if I will be able to finish this project, but I'll do my best.
+5. So enjoy and don't let people use you :) (for free)
