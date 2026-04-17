@@ -77,6 +77,24 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getErrorType(), ex.getMessage());
     }
 
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<ApiError> handlePaymentNotFoundException(PaymentNotFoundException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getERROR_TYPE(), ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidPaymentOperationException.class)
+    public ResponseEntity<ApiError> handleInvalidPaymentOperationException(InvalidPaymentOperationException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getERROR_TYPE(), ex.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ApiError> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getERROR_TYPE(), ex.getMessage());
+    }
+
     private ResponseEntity<ApiError> buildResponse(HttpStatus status, ErrorType type, String message) {
         ApiError apiError = ApiError.builder()
                 .dateTime(Instant.now())

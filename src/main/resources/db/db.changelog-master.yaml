@@ -75,3 +75,14 @@ databaseChangeLog:
             endDelimiter: ";"
             splitStatements: true
             stripComments: true
+
+  - changeSet:
+      id: 08-payment
+      author: Makar
+      changes:
+        - sqlFile:
+            path: changes/db.changeset-8-payment.sql
+            relativeToChangelogFile: true
+            endDelimiter: ";"
+            splitStatements: true
+            stripComments: true
