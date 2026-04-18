@@ -1,10 +1,12 @@
 package com.example.SplitBills.service.impl;
 
+import com.example.SplitBills.enums.FinancialType;
 import com.example.SplitBills.enums.PaymentStatus;
 import com.example.SplitBills.exception.GroupNotFoundException;
 import com.example.SplitBills.exception.PaymentNotFoundException;
 import com.example.SplitBills.exception.InvalidPaymentOperationException;
 import com.example.SplitBills.exception.UnauthorizedAccessException;
+import com.example.SplitBills.model.dto.FinancialEventDto;
 import com.example.SplitBills.model.dto.response.PaymentResponseDto;
 import com.example.SplitBills.model.dto.response.PersonalBalanceResponseDto;
 import com.example.SplitBills.model.entity.PaymentEntity;
@@ -12,6 +14,7 @@ import com.example.SplitBills.model.entity.GroupEntity;
 import com.example.SplitBills.model.entity.UserEntity;
 import com.example.SplitBills.repository.PaymentRepository;
 import com.example.SplitBills.repository.GroupRepository;
+import com.example.SplitBills.service.KafkaProducerService;
 import com.example.SplitBills.service.api.PaymentService;
 import com.example.SplitBills.service.api.ExpenseService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +34,7 @@ public class PaymentServiceDefault implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final GroupRepository groupRepository;
     private final ExpenseService expenseService;
+    private final KafkaProducerService kafkaProducerService;
 
     @Override
     @Transactional
@@ -70,7 +74,18 @@ public class PaymentServiceDefault implements PaymentService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        return mapToResponseDto(paymentRepository.save(payment));
+        PaymentEntity savedPayment = paymentRepository.save(payment);
+
+        kafkaProducerService.sendFinancialEvent(new FinancialEventDto(
+                groupId,
+                sender.getId(),
+                admin.getId(),
+                savedPayment.getAmount(),
+                FinancialType.PAYMENT_PENDING,
+                comment
+        ));
+
+        return mapToResponseDto(savedPayment);
     }
 
     @Override
@@ -93,7 +108,18 @@ public class PaymentServiceDefault implements PaymentService {
         payment.setStatus(PaymentStatus.CONFIRMED);
         payment.setResolvedAt(LocalDateTime.now());
 
-        return mapToResponseDto(paymentRepository.save(payment));
+        PaymentEntity savedPayment = paymentRepository.save(payment);
+
+        kafkaProducerService.sendFinancialEvent(new FinancialEventDto(
+                payment.getGroupId(),
+                payment.getSenderId(),
+                payment.getReceiverId(),
+                payment.getAmount(),
+                FinancialType.PAYMENT_APPROVED,
+                "Payment approved by admin"
+        ));
+
+        return mapToResponseDto(savedPayment);
     }
 
     @Override
@@ -112,7 +138,18 @@ public class PaymentServiceDefault implements PaymentService {
         payment.setStatus(PaymentStatus.REJECTED);
         payment.setResolvedAt(LocalDateTime.now());
 
-        return mapToResponseDto(paymentRepository.save(payment));
+        PaymentEntity savedPayment = paymentRepository.save(payment);
+
+        kafkaProducerService.sendFinancialEvent(new FinancialEventDto(
+                payment.getGroupId(),
+                payment.getSenderId(),
+                payment.getReceiverId(),
+                payment.getAmount(),
+                FinancialType.PAYMENT_REJECTED,
+                "Payment rejected by admin"
+        ));
+
+        return mapToResponseDto(savedPayment);
     }
 
     @Override

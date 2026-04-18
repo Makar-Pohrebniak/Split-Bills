@@ -21,4 +21,6 @@ public interface ExpenseService {
     void deleteExpense(Long expenseId, UUID subId);
 
     PersonalBalanceResponseDto getUserBalanceInGroup(Long groupId, UUID subId);
+
+    void recalculateGroupExpenses(Long groupId);
 }

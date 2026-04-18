@@ -6,7 +6,7 @@
 
 ## 🛠 Tech Stack
 * **Language:** Java 21 (LTS)
-* **Framework:** Spring Boot 3.x
+* **Framework:** Spring Boot 4.x
 * **Security:** Spring Security, Stateless JWT Authentication
 * **Persistence:** Spring Data JPA (Hibernate 6)
 * **Database:** MySQL 8.x (Optimized for UUID storage), Redis
@@ -52,7 +52,7 @@ Optimisation of payment/debt:
 ## 🏗 Phase 6: DevOps
 Optimisation of payment/debt:
 * **GlobalExceptionHandler**: already implemented.
-* **US-17 Kafka**: IN PROGRESS
+* **US-17 Kafka**: Implemented Kafka for the future notification and for Recalculation of debt.
 * **US-18 CI/CD**: IN PROGRESS
 
 ### 🛡 Key Architectural Decisions
@@ -67,18 +67,19 @@ Optimisation of payment/debt:
 4. **Authorization on all layers except for auth layer**:
     - Auth layer: login, register have to be available and other layers only with proper authorization.
 5. **Infrastructure & Migrations (Docker & Liquibase)**:
-   - The application is fully containerized with **Docker Compose**, and the database schema is managed via **Liquibase** migrations.
+    - The application is fully containerized with **Docker Compose**, and the database schema is managed via **Liquibase** migrations.
 6. **Limiter in creating groups**:
-   - We should be able to create groups with the same name, but if we do it every second it's bad for the app. So I added limiter.
+    - We should be able to create groups with the same name, but if we do it every second it's bad for the app. So I added limiter.
 7. **Big Decimal**:
-   - Used BigDecimal for all monetary values instead of double or float. This prevents binary floating-point rounding errors, ensuring that every cent is accounted for and balances remain exact during complex split calculations.
+    - Used BigDecimal for all monetary values instead of double or float. This prevents binary floating-point rounding errors, ensuring that every cent is accounted for and balances remain exact during complex split calculations.
 8. **Kafka for payment/debt processing**: 
-   - provides a durable, persistent event log that allows us to replay transactions for auditing and ensures high reliability in a decoupled event-driven architecture.
+    - provides a durable, persistent event log that allows us to replay transactions for auditing and ensures high reliability in a decoupled event-driven architecture.
 9. **Removed Unequal split**: 
-   - real friendship cost more than money.
+    - real friendship cost more than money.
 10. **Redis**:
-   - Using Redis for refresh tokens is the right choice because its built-in TTL (Time-To-Live) mechanism and high-speed in-memory storage perfectly handle the ephemeral nature of session tokens while ensuring minimal latency during authentication.
-
+    - Using Redis for refresh tokens is the right choice because its built-in TTL (Time-To-Live) mechanism and high-speed in-memory storage perfectly handle the ephemeral nature of session tokens while ensuring minimal latency during authentication.
+11. **Recalculation**: 
+    - Sounds boring, but it's important. Number of users change and recalculation happens.
 
 ---
 
@@ -126,3 +127,4 @@ Code quality is enforced through a rigorous unit testing suite:
 3. I believe that AI is our future, but to uncover full potential of AI is in the hands of smart and lazy developers.
 4. I don't know if I will be able to finish this project, but I'll do my best.
 5. So enjoy and don't let people use you :) (for free)
+6. Dear developers, don't fully rely on AI. Sometimes looking straight into the code is better, than debugging for 2 hours later :)

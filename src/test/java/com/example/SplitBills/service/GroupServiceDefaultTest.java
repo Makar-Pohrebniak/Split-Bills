@@ -10,12 +10,14 @@ import com.example.SplitBills.model.entity.UserEntity;
 import com.example.SplitBills.repository.GroupRepository;
 import com.example.SplitBills.repository.UserRepository;
 import com.example.SplitBills.service.impl.GroupServiceDefault;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +37,9 @@ class GroupServiceDefaultTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private KafkaProducerService kafkaProducerService;
+
     @InjectMocks
     private GroupServiceDefault groupService;
 
@@ -44,7 +49,10 @@ class GroupServiceDefaultTest {
 
     @BeforeEach
     void setUp() {
+        TransactionSynchronizationManager.initSynchronization();
+
         testSubId = UUID.randomUUID();
+
         testUser = new UserEntity();
         testUser.setUsername("testUser");
         testUser.setEmail("test@gmail.com");
@@ -58,17 +66,29 @@ class GroupServiceDefaultTest {
         testGroup.setMembers(new HashSet<>(List.of(testUser)));
     }
 
+    @AfterEach
+    void tearDown() {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.clear();
+        }
+    }
+
     @Test
     void createGroup_Success() {
         when(userRepository.findBySubId(anyString())).thenReturn(Optional.of(testUser));
         when(groupRepository.save(any(GroupEntity.class))).thenReturn(testGroup);
 
-        GroupResponse response = groupService.createGroup("Test Group", CurrencyEnum.UAH ,testSubId);
+        GroupResponse response = groupService.createGroup("Test Group", CurrencyEnum.UAH, testSubId);
+
+        TransactionSynchronizationManager.getSynchronizations()
+                .forEach(sync -> sync.afterCommit());
 
         assertNotNull(response);
         assertEquals("Test Group", response.getName());
         assertEquals(testSubId, response.getOwner());
+
         verify(groupRepository, times(1)).save(any(GroupEntity.class));
+        verify(kafkaProducerService).sendMemberEvent(any());
     }
 
     @Test

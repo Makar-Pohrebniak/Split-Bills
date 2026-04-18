@@ -1,16 +1,19 @@
 package com.example.SplitBills.service.impl;
 
 import com.example.SplitBills.enums.CurrencyEnum;
+import com.example.SplitBills.enums.MemberAction;
 import com.example.SplitBills.exception.GroupNotFoundException;
 import com.example.SplitBills.exception.NotYourGroupException;
 import com.example.SplitBills.exception.TooManyRequestsException;
 import com.example.SplitBills.exception.UserNotFoundException;
+import com.example.SplitBills.model.dto.MemberEventDto;
 import com.example.SplitBills.model.dto.response.GroupResponse;
 import com.example.SplitBills.model.dto.response.UserResponse;
 import com.example.SplitBills.model.entity.GroupEntity;
 import com.example.SplitBills.model.entity.UserEntity;
 import com.example.SplitBills.repository.GroupRepository;
 import com.example.SplitBills.repository.UserRepository;
+import com.example.SplitBills.service.KafkaProducerService;
 import com.example.SplitBills.service.api.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,13 +25,13 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-
 @Service
 @RequiredArgsConstructor
 public class GroupServiceDefault implements GroupService {
 
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     private final Map<UUID, Long> creationLocks = new ConcurrentHashMap<>();
 
@@ -36,14 +39,13 @@ public class GroupServiceDefault implements GroupService {
     @Transactional
     public GroupResponse createGroup(String groupName, CurrencyEnum currency, UUID subId) {
         long currentTime = System.currentTimeMillis();
-
         long lastRequestTime = creationLocks.getOrDefault(subId, 0L);
 
         if (currentTime - lastRequestTime < 3000) {
             throw new TooManyRequestsException();
         }
 
-        creationLocks.put(subId, currentTime);;
+        creationLocks.put(subId, currentTime);
 
         UserEntity ownerEntity = userRepository.findBySubId(String.valueOf(subId))
                 .orElseThrow(() -> new UserNotFoundException(String.valueOf(subId)));
@@ -55,6 +57,13 @@ public class GroupServiceDefault implements GroupService {
         group.getMembers().add(ownerEntity);
 
         GroupEntity savedGroup = groupRepository.save(group);
+
+        kafkaProducerService.sendMemberEvent(new MemberEventDto(
+                savedGroup.getId(),
+                ownerEntity.getId(),
+                MemberAction.ADDED
+        ));
+
         return mapToResponse(savedGroup);
     }
 

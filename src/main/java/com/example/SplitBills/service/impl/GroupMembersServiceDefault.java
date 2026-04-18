@@ -1,17 +1,22 @@
 package com.example.SplitBills.service.impl;
 
+import com.example.SplitBills.enums.MemberAction;
 import com.example.SplitBills.exception.GroupNotFoundException;
 import com.example.SplitBills.exception.NotYourGroupException;
 import com.example.SplitBills.exception.UserNotFoundException;
+import com.example.SplitBills.model.dto.MemberEventDto;
 import com.example.SplitBills.model.dto.response.UserResponse;
 import com.example.SplitBills.model.entity.GroupEntity;
 import com.example.SplitBills.model.entity.UserEntity;
 import com.example.SplitBills.repository.GroupRepository;
 import com.example.SplitBills.repository.UserRepository;
+import com.example.SplitBills.service.KafkaProducerService;
 import com.example.SplitBills.service.api.GroupMembersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Set;
 import java.util.UUID;
@@ -22,6 +27,7 @@ import java.util.stream.Collectors;
 public class GroupMembersServiceDefault implements GroupMembersService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     @Override
     @Transactional
@@ -37,6 +43,14 @@ public class GroupMembersServiceDefault implements GroupMembersService {
                 .orElseThrow(() -> new UserNotFoundException(String.valueOf(friendId)));
 
         group.getMembers().add(user);
+        groupRepository.save(group);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                kafkaProducerService.sendMemberEvent(new MemberEventDto(groupId, user.getId(), MemberAction.ADDED));
+            }
+        });
     }
 
     @Override
@@ -53,6 +67,14 @@ public class GroupMembersServiceDefault implements GroupMembersService {
                 .orElseThrow(() -> new UserNotFoundException(String.valueOf(friendId)));
 
         group.getMembers().remove(user);
+        groupRepository.save(group);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                kafkaProducerService.sendMemberEvent(new MemberEventDto(groupId, user.getId(), MemberAction.REMOVED));
+            }
+        });
     }
 
     @Override
@@ -76,5 +98,4 @@ public class GroupMembersServiceDefault implements GroupMembersService {
                         .build())
                 .collect(Collectors.toSet());
     }
-
 }

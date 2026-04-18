@@ -4,17 +4,23 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password: ""
+
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
     show-sql: true
+
   liquibase:
     enabled: false
+
   data:
     redis:
       host: localhost
       port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
 
 springdoc:
   api-docs:
@@ -30,3 +36,5 @@ jwt:
   secret: test
   expirationMs: 3600000
   refreshExpirationMs: 2592000000
+
+KAFKA_SERVERS: localhost:9092

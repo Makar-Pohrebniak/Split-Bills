@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -30,8 +31,8 @@ public class ExpenseEntity {
     @JoinColumn(name = "payer_id")
     private UserEntity payer;
 
-    @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL)
-    private List<ExpenseShare> shares;
+    @OneToMany(mappedBy = "expense", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ExpenseShare> shares = new ArrayList<>();
 
     private LocalDateTime createdAt;
 }

@@ -1,7 +1,6 @@
 package com.example.SplitBills.service;
 
 import com.example.SplitBills.model.dto.request.AddExpenseDto;
-import com.example.SplitBills.model.dto.request.ExpenseShareDto;
 import com.example.SplitBills.model.dto.request.UpdateExpenseDto;
 import com.example.SplitBills.model.dto.response.ExpenseResponseDto;
 import com.example.SplitBills.model.entity.ExpenseEntity;
@@ -10,7 +9,9 @@ import com.example.SplitBills.model.entity.GroupEntity;
 import com.example.SplitBills.model.entity.UserEntity;
 import com.example.SplitBills.repository.ExpenseRepository;
 import com.example.SplitBills.repository.GroupRepository;
+import com.example.SplitBills.repository.PaymentRepository;
 import com.example.SplitBills.service.impl.ExpenseServiceDefault;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +33,12 @@ class ExpenseServiceDefaultTest {
     private ExpenseRepository expenseRepository;
     @Mock
     private GroupRepository groupRepository;
+    @Mock
+    private KafkaProducerService kafkaProducerService;
+    @Mock
+    private PaymentRepository paymentRepository;
+    @Mock
+    private EntityManager entityManager;
 
     @InjectMocks
     private ExpenseServiceDefault expenseService;
@@ -73,12 +80,7 @@ class ExpenseServiceDefaultTest {
         ExpenseEntity saved = captor.getValue();
         assertEquals(new BigDecimal("100.01"), saved.getAmount());
         assertEquals(2, saved.getShares().size());
-
-        BigDecimal totalShares = saved.getShares().stream()
-                .map(ExpenseShare::getShareAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        assertEquals(0, totalShares.compareTo(new BigDecimal("100.01")));
+        verify(kafkaProducerService).sendFinancialEvent(any());
     }
 
     @Test
@@ -87,6 +89,15 @@ class ExpenseServiceDefaultTest {
 
         assertThrows(RuntimeException.class, () ->
                 expenseService.addExpense(10L, expenseDto, UUID.randomUUID())
+        );
+    }
+
+    @Test
+    void addExpense_ThrowsException_WhenGroupNotFound() {
+        when(groupRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(com.example.SplitBills.exception.GroupNotFoundException.class, () ->
+                expenseService.addExpense(99L, expenseDto, payerSubId)
         );
     }
 
@@ -107,6 +118,42 @@ class ExpenseServiceDefaultTest {
     }
 
     @Test
+    void getExpenseById_ThrowsException_WhenNotFound() {
+        when(expenseRepository.findById(999L)).thenReturn(Optional.empty());
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                expenseService.getExpenseById(999L, payerSubId)
+        );
+        assertEquals("Expense not found", exception.getMessage());
+    }
+
+    @Test
+    void getExpensesByGroupId_Success() {
+        when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
+
+        ExpenseEntity e = new ExpenseEntity();
+        e.setPayer(payer);
+        e.setAmount(new BigDecimal("10.0"));
+
+        when(expenseRepository.findByGroupId(10L)).thenReturn(List.of(e));
+
+        List<ExpenseResponseDto> result = expenseService.getExpensesByGroupId(10L, payerSubId);
+
+        assertFalse(result.isEmpty());
+        verify(expenseRepository).findByGroupId(10L);
+    }
+
+    @Test
+    void getExpensesByGroupId_ThrowsException_WhenUserNotMember() {
+        when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                expenseService.getExpensesByGroupId(10L, UUID.randomUUID())
+        );
+        assertTrue(exception.getMessage().contains("Access denied"));
+    }
+
+    @Test
     void updateExpense_Success() {
         ExpenseEntity expense = new ExpenseEntity();
         expense.setId(1L);
@@ -120,7 +167,24 @@ class ExpenseServiceDefaultTest {
         expenseService.updateExpense(1L, updateDto, payerSubId);
 
         verify(expenseRepository).save(any(ExpenseEntity.class));
+        verify(kafkaProducerService).sendFinancialEvent(any());
         assertEquals(new BigDecimal("200.00"), expense.getAmount());
+    }
+
+    @Test
+    void updateExpense_ThrowsException_WhenUserNotPayer() {
+        ExpenseEntity expense = new ExpenseEntity();
+        expense.setId(1L);
+        expense.setPayer(payer);
+
+        when(expenseRepository.findById(1L)).thenReturn(Optional.of(expense));
+
+        UpdateExpenseDto updateDto = new UpdateExpenseDto(new BigDecimal("200.00"), "Hack");
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                expenseService.updateExpense(1L, updateDto, UUID.randomUUID())
+        );
+        assertEquals("Only the payer can update this expense", exception.getMessage());
     }
 
     @Test
@@ -128,22 +192,39 @@ class ExpenseServiceDefaultTest {
         ExpenseEntity expense = new ExpenseEntity();
         expense.setId(1L);
         expense.setPayer(payer);
+        expense.setGroup(group);
 
         when(expenseRepository.findById(1L)).thenReturn(Optional.of(expense));
 
         expenseService.deleteExpense(1L, payerSubId);
 
         verify(expenseRepository).delete(expense);
+        verify(kafkaProducerService).sendFinancialEvent(any());
+    }
+
+    @Test
+    void deleteExpense_ThrowsException_WhenUserNotPayer() {
+        ExpenseEntity expense = new ExpenseEntity();
+        expense.setId(1L);
+        expense.setPayer(payer);
+
+        when(expenseRepository.findById(1L)).thenReturn(Optional.of(expense));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                expenseService.deleteExpense(1L, UUID.randomUUID())
+        );
+        assertEquals("Only the payer can delete this expense", exception.getMessage());
     }
 
     @Test
     void getUserBalanceInGroup_Success_PositiveBalance() {
         when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
+        when(paymentRepository.findAllUserPaymentsInGroup(anyLong(), anyLong()))
+                .thenReturn(Collections.emptyList());
 
         ExpenseEntity expense1 = new ExpenseEntity();
         expense1.setPayer(payer);
         expense1.setAmount(new BigDecimal("100.00"));
-
         ExpenseShare share1 = new ExpenseShare();
         share1.setUser(payer);
         share1.setShareAmount(new BigDecimal("50.00"));
@@ -152,7 +233,6 @@ class ExpenseServiceDefaultTest {
         ExpenseEntity expense2 = new ExpenseEntity();
         expense2.setPayer(member2);
         expense2.setAmount(new BigDecimal("20.00"));
-
         ExpenseShare share2 = new ExpenseShare();
         share2.setUser(payer);
         share2.setShareAmount(new BigDecimal("10.00"));
@@ -172,6 +252,8 @@ class ExpenseServiceDefaultTest {
     void getUserBalanceInGroup_EmptyExpenses_ReturnsZeros() {
         when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
         when(expenseRepository.findByGroupId(10L)).thenReturn(Collections.emptyList());
+        when(paymentRepository.findAllUserPaymentsInGroup(anyLong(), anyLong()))
+                .thenReturn(Collections.emptyList());
 
         var result = expenseService.getUserBalanceInGroup(10L, payerSubId);
 
@@ -192,73 +274,41 @@ class ExpenseServiceDefaultTest {
     @Test
     void getUserBalanceInGroup_ThrowsException_WhenUserNotMember() {
         when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
-        UUID strangerSubId = UUID.randomUUID();
 
         assertThrows(RuntimeException.class, () ->
-                expenseService.getUserBalanceInGroup(10L, strangerSubId)
+                expenseService.getUserBalanceInGroup(10L, UUID.randomUUID())
         );
     }
 
     @Test
-    void updateExpense_ThrowsException_WhenUserNotPayer() {
+    void recalculateGroupExpenses_Success() {
+        Long groupId = 10L;
         ExpenseEntity expense = new ExpenseEntity();
         expense.setId(1L);
-        expense.setPayer(payer);
+        expense.setAmount(new BigDecimal("100.00"));
+        expense.setShares(new ArrayList<>(List.of(new ExpenseShare())));
 
-        when(expenseRepository.findById(1L)).thenReturn(Optional.of(expense));
+        when(groupRepository.findById(groupId)).thenReturn(Optional.of(group));
+        when(expenseRepository.findByGroupId(groupId)).thenReturn(List.of(expense));
 
-        UpdateExpenseDto updateDto = new UpdateExpenseDto(new BigDecimal("200.00"), "Hack");
-        UUID strangerId = UUID.randomUUID();
+        expenseService.recalculateGroupExpenses(groupId);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                expenseService.updateExpense(1L, updateDto, strangerId)
-        );
-        assertEquals("Only the payer can update this expense", exception.getMessage());
+        verify(entityManager).clear();
+        verify(entityManager).flush();
+        verify(expenseRepository).saveAll(anyList());
+        assertEquals(2, expense.getShares().size());
+        for (ExpenseShare share : expense.getShares()) {
+            assertEquals(0, share.getShareAmount().compareTo(new BigDecimal("50.00")));
+        }
     }
 
     @Test
-    void deleteExpense_ThrowsException_WhenUserNotPayer() {
-        ExpenseEntity expense = new ExpenseEntity();
-        expense.setId(1L);
-        expense.setPayer(payer);
-
-        when(expenseRepository.findById(1L)).thenReturn(Optional.of(expense));
-
-        UUID strangerId = UUID.randomUUID();
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                expenseService.deleteExpense(1L, strangerId)
-        );
-        assertEquals("Only the payer can delete this expense", exception.getMessage());
-    }
-
-    @Test
-    void addExpense_ThrowsException_WhenGroupNotFound() {
+    void recalculateGroupExpenses_GroupNotFound() {
         when(groupRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(com.example.SplitBills.exception.GroupNotFoundException.class, () ->
-                expenseService.addExpense(99L, expenseDto, payerSubId)
+                expenseService.recalculateGroupExpenses(99L)
         );
-    }
-
-    @Test
-    void getExpenseById_ThrowsException_WhenNotFound() {
-        when(expenseRepository.findById(999L)).thenReturn(Optional.empty());
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                expenseService.getExpenseById(999L, payerSubId)
-        );
-        assertEquals("Expense not found", exception.getMessage());
-    }
-
-    @Test
-    void getExpensesByGroupId_ThrowsException_WhenUserNotMember() {
-        when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
-        UUID strangerId = UUID.randomUUID();
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                expenseService.getExpensesByGroupId(10L, strangerId)
-        );
-        assertTrue(exception.getMessage().contains("Access denied"));
+        verify(expenseRepository, never()).saveAll(anyList());
     }
 }

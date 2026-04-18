@@ -61,4 +61,24 @@ public interface PaymentControllerSwaggerDescription {
                     content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     ResponseEntity<List<PaymentResponseDto>> getGroupPayments(Long groupId);
+
+    @Operation(summary = "Get confirmed payments in a group",
+            description = "Retrieves only the payments that have been approved by the group owner.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved confirmed payments"),
+            @ApiResponse(responseCode = "404", description = "Group not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<List<PaymentResponseDto>> getConfirmedGroupPayments(Long groupId);
+
+    @Operation(summary = "Get my payments in a group",
+            description = "Retrieves all payments made by the currently authenticated user in a specific group.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved user's payments"),
+            @ApiResponse(responseCode = "403", description = "Access denied",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "404", description = "Group not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
+    ResponseEntity<List<PaymentResponseDto>> getMyPaymentsInGroup(Long groupId, UUID subId);
 }
