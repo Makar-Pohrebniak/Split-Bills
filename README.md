@@ -12,7 +12,8 @@
 * **Database:** MySQL 8.x (Optimized for UUID storage), Redis
 * **Testing:** JUnit 5, Mockito, AssertJ
 * **DB versioning:** Liquibase
-* **Containerization:** Docker
+* **Containerization:** Docker, GitHub Container Registry (GHCR)
+* **CI/CD**: GitHub Actions (Automated Build, Test, and Deploy)
 * **Messaging & Async:** Apache Kafka (Event-driven notifications and payment status processing)
 
 ---
@@ -20,7 +21,7 @@
 ## 🏗 Phase 1: Authentication & Security (Current Progress)
 The core security foundation has been successfully implemented, covering:
 
-* **US-1: User Registration**: Secure account creation with data validation and password hashing (BCrypt).
+* **US-1: User Registration**: Secure account creation with data validation and password hashing.
 * **US-2: User Login**: Secure user authentication and credential verification.
 * **US-3: JWT Issuance**: Generation of secure, signed tokens for stateless request authorization.
 * **US-4: Secure endpoints**: Add authorization with Bearer token to all endpoints except for authentication layer.
@@ -47,13 +48,13 @@ Managing expenses:
 ## 🏗 Phase 5: Optimisation
 Optimisation of payment/debt:
 * **US-15 View personal balance in the group**: Implementing logic for personal balance in the group.
-* **US-16 Payment/debt settling**: Implemented payment/debt settling process
+* **US-16 Payment/debt settling**: Implemented payment/debt settling process.
 
 ## 🏗 Phase 6: DevOps
-Optimisation of payment/debt:
-* **GlobalExceptionHandler**: already implemented.
-* **US-17 Kafka**: Implemented Kafka for the future notification and for Recalculation of debt.
-* **US-18 CI/CD**: IN PROGRESS
+DevOps and integrity:
+* **GlobalExceptionHandler**: Centralized error handling for consistent API responses.
+* **US-17 Kafka**: Integrated for asynchronous notifications and reliable debt recalculation events.
+* **US-18 CI/CD**: Fully automated pipeline with GitHub Actions and Docker image publishing.
 
 ### 🛡 Key Architectural Decisions
 1. **UUID as Primary Key (`sub_id`)**:
@@ -80,6 +81,8 @@ Optimisation of payment/debt:
     - Using Redis for refresh tokens is the right choice because its built-in TTL (Time-To-Live) mechanism and high-speed in-memory storage perfectly handle the ephemeral nature of session tokens while ensuring minimal latency during authentication.
 11. **Recalculation**: 
     - Sounds boring, but it's important. Number of users change and recalculation happens.
+12. **CI/CD**:
+    - Implemented a robust pipeline that automates testing and containerization. This ensures that every merge to main is stable and the latest version is always available as a Docker image.
 
 ---
 
@@ -110,7 +113,7 @@ Code quality is enforced through a rigorous unit testing suite:
 - [x] **Phase 3: Core Logic** (Groups Management, Participant Roles)
 - [x] **Phase 4: Finance** (Expense Tracking, Equal/Unequal Split Algorithms)
 - [x] **Phase 5: Optimization** (Debt Settlement Algorithm - Minimizing Transactions)
-- [`IN PROGRESS`] **Phase 6: DevOps** (Kafka, Dockerization, CI/CD, Global Exception Handling)
+- [x] **Phase 6: DevOps** (Kafka, Dockerization, CI/CD, Global Exception Handling)
 
 ---
 
@@ -118,6 +121,9 @@ Code quality is enforced through a rigorous unit testing suite:
 1. Clone the repository.
 2. Configure your MySQL credentials in `src/main/resources/application.yml`.
 3. Run the application: `./mvnw spring-boot:run` and `docker-compose up -d`.
+4. Explore the API:
+   Once the application is running, you can access the Swagger UI to test the endpoints:
+🔗 http://localhost:8080/swagger-ui/index.html
 
 ---
 
@@ -128,3 +134,5 @@ Code quality is enforced through a rigorous unit testing suite:
 4. I don't know if I will be able to finish this project, but I'll do my best.
 5. So enjoy and don't let people use you :) (for free)
 6. Dear developers, don't fully rely on AI. Sometimes looking straight into the code is better, than debugging for 2 hours later :)
+7. This is MVP, there is always room for improvement, but Split Bills is on pause for now.
+8. Hope you enjoy :)
