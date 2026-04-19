@@ -7,8 +7,9 @@ RUN mvn clean package -DskipTests
 
 FROM public.ecr.aws/amazoncorretto/amazoncorretto:21-al2023-headless
 WORKDIR /app
-RUN dnf install -y shadow-utils && dnf clean all
-RUN useradd -ms /bin/bash springuser
+RUN dnf install -y shadow-utils && \
+    useradd -ms /bin/bash springuser && \
+    dnf clean all
 USER springuser
 COPY --from=builder /app/target/*.jar app.jar
 ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
