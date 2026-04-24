@@ -91,7 +91,7 @@ public class GroupServiceDefault implements GroupService {
                 .orElseThrow(() -> new GroupNotFoundException(id));
 
         if (!group.getOwner().equals(ownerSubId)) {
-            throw new NotYourGroupException();
+            throw new NotYourGroupException("Not your group. You cannot delete this group.");
         }
 
         groupRepository.delete(group);

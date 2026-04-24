@@ -1,7 +1,7 @@
 package com.example.SplitBills.service.impl;
 
 import com.example.SplitBills.enums.FinancialType;
-import com.example.SplitBills.exception.GroupNotFoundException;
+import com.example.SplitBills.exception.*;
 import com.example.SplitBills.model.dto.FinancialEventDto;
 import com.example.SplitBills.model.dto.request.AddExpenseDto;
 import com.example.SplitBills.model.dto.request.UpdateExpenseDto;
@@ -49,7 +49,7 @@ public class ExpenseServiceDefault implements ExpenseService {
         UserEntity payer = group.getMembers().stream()
                 .filter(m -> m.getSubId().equals(subId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Access denied: you are not a member of this group"));
+                .orElseThrow(() -> new NotYourGroupException("Access denied: you are not a member of this group"));
 
         ExpenseEntity expense = new ExpenseEntity();
         expense.setAmount(expenseDto.amount());
@@ -77,7 +77,7 @@ public class ExpenseServiceDefault implements ExpenseService {
     @Transactional(readOnly = true)
     public ExpenseResponseDto getExpenseById(Long expenseId, UUID subId) {
         ExpenseEntity expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new RuntimeException("Expense not found"));
+                .orElseThrow(ExpenseNotFoundException::new);
 
         validateMember(expense.getGroup(), subId);
 
@@ -101,10 +101,10 @@ public class ExpenseServiceDefault implements ExpenseService {
     @Transactional
     public void updateExpense(Long expenseId, UpdateExpenseDto updateDto, UUID subId) {
         ExpenseEntity expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new RuntimeException("Expense not found"));
+                .orElseThrow(ExpenseNotFoundException::new);
 
         if (!expense.getPayer().getSubId().equals(subId)) {
-            throw new RuntimeException("Only the payer can update this expense");
+            throw new NotYourExpenseException("Only the payer can update this expense");
         }
 
         expense.setDescription(updateDto.getDescription());
@@ -129,10 +129,10 @@ public class ExpenseServiceDefault implements ExpenseService {
     @Transactional
     public void deleteExpense(Long expenseId, UUID subId) {
         ExpenseEntity expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new RuntimeException("Expense not found"));
+                .orElseThrow(ExpenseNotFoundException::new);
 
         if (!expense.getPayer().getSubId().equals(subId)) {
-            throw new RuntimeException("Only the payer can delete this expense");
+            throw new NotYourExpenseException("Only the payer can delete this expense");
         }
 
         Long groupId = expense.getGroup().getId();
@@ -162,7 +162,7 @@ public class ExpenseServiceDefault implements ExpenseService {
         UserEntity currentUser = group.getMembers().stream()
                 .filter(m -> m.getSubId().equals(subId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("User not found in group"));
+                .orElseThrow(() -> new UserNotFoundException("User not found in group"));
 
         List<ExpenseEntity> groupExpenses = expenseRepository.findByGroupId(groupId);
 
@@ -250,7 +250,7 @@ public class ExpenseServiceDefault implements ExpenseService {
         boolean isMember = group.getMembers().stream()
                 .anyMatch(m -> m.getSubId().equals(subId));
         if (!isMember) {
-            throw new RuntimeException("Access denied: you are not a member of this group");
+            throw new NotAMemberException("Access denied: you are not a member of this group");
         }
     }
 

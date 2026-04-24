@@ -95,6 +95,24 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getERROR_TYPE(), ex.getMessage());
     }
 
+    @ExceptionHandler(NotYourExpenseException.class)
+    public ResponseEntity<ApiError> handleNotYourExpenseException(NotYourExpenseException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getERROR_TYPE(), ex.getMessage());
+    }
+
+    @ExceptionHandler(NotAMemberException.class)
+    public ResponseEntity<ApiError> handleNotYourExpenseException(NotAMemberException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.FORBIDDEN, ex.getERROR_TYPE(), ex.getMessage());
+    }
+
+    @ExceptionHandler(ExpenseNotFoundException.class)
+    public ResponseEntity<ApiError> handleExpenseNotFoundException(ExpenseNotFoundException ex) {
+        log.info(ex.getMessage());
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getERROR_TYPE(), ex.getMessage());
+    }
+
     private ResponseEntity<ApiError> buildResponse(HttpStatus status, ErrorType type, String message) {
         ApiError apiError = ApiError.builder()
                 .dateTime(Instant.now())

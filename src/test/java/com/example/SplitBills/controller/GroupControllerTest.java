@@ -113,7 +113,7 @@ class GroupControllerTest {
 
     @Test
     void deleteGroup_Returns400_WhenNotOwner() throws Exception {
-        doThrow(new NotYourGroupException()).when(groupService).deleteGroup(eq(1L), any());
+        doThrow(new NotYourGroupException("Not your group. You cannot delete it.")).when(groupService).deleteGroup(eq(1L), any());
 
         mockMvc.perform(delete("/api/v1/groups/1"))
                 .andExpect(status().isBadRequest());

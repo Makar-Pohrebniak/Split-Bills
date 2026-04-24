@@ -36,7 +36,7 @@ public class GroupMembersServiceDefault implements GroupMembersService {
                 .orElseThrow(() -> new GroupNotFoundException(groupId));
 
         if (!group.getOwner().equals(ownerSubId)) {
-            throw new NotYourGroupException();
+            throw new NotYourGroupException("Not your group. You cannot add a member");
         }
 
         UserEntity user = userRepository.findBySubId(String.valueOf(friendId))
@@ -60,7 +60,7 @@ public class GroupMembersServiceDefault implements GroupMembersService {
                 .orElseThrow(() -> new GroupNotFoundException(groupId));
 
         if (!group.getOwner().equals(ownerSubId)) {
-            throw new NotYourGroupException();
+            throw new NotYourGroupException("Not your group. You cannot remove a member");
         }
 
         UserEntity user = userRepository.findBySubId(String.valueOf(friendId))
@@ -87,7 +87,7 @@ public class GroupMembersServiceDefault implements GroupMembersService {
                 .anyMatch(user -> user.getSubId().equals(requesterSubId));
 
         if (!isMember) {
-            throw new NotYourGroupException();
+            throw new NotYourGroupException("Not your group. You cannot get members");
         }
 
         return group.getMembers().stream()
